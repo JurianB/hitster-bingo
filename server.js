@@ -136,7 +136,7 @@ server.listen(PORT,'0.0.0.0',()=>{
  console.log('  Telefoons joinen via:  '+(ips[0]?'http://'+ips[0].ip+':'+PORT+'/play':'(geen netwerk gevonden)'));
  if(ips.length>1)console.log('  Andere adressen:       '+ips.slice(1).map(i=>i.ip+' ('+i.name+')').join(', '));
  console.log('\n  Stoppen: Ctrl+C\n');
- if(process.env.OPEN_BROWSER){
+ if(process.env.OPEN_BROWSER||process.argv.includes('--open')){
   const url='http://localhost:'+PORT+'/',cp=require('child_process');
   try{
    if(process.platform==='win32')cp.exec('start "" "'+url+'"');

@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Hitster Live woonkamerspel: tv + telefoons via websockets",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": { "start": "node server.js", "play": "node server.js --open" },
   "engines": { "node": ">=18" }
 }

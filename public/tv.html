@@ -563,6 +563,61 @@ nav .pill{margin-left:.2rem}
 .rv-hint{color:var(--mut);font-size:1.1rem;position:relative;overflow:hidden}
 .rv-hint i{display:block;height:.25rem;margin-top:.4rem;background:var(--acc);animation:rvbar 15s linear forwards;transform-origin:left}
 @keyframes rvbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ===== LAYOUT v3: ruim, responsief ===== */
+#spelen{padding-left:clamp(.7rem,1.6vw,2.2rem);padding-right:clamp(.7rem,1.6vw,2.2rem)}
+.wheelwrap{container-type:inline-size}
+.hub{inset:36.5%;font-size:3.5cqw;line-height:1.05;padding:0}
+#spelen .ctrl{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;align-items:center}
+#spelen .ctrl .big{flex:1 1 11rem}
+#spelen .ctrl button{padding:.5rem .9rem}
+#spelen .count{text-align:center}
+#spelen .hist{justify-content:center}
+.mini{width:5.2rem}
+.pl-b{align-items:center;justify-content:space-between}.pl-s{flex:1;min-width:0}
+.pl-n,.pl-l,.pl-a,.steps{display:none!important}
+.pl{container-type:inline-size}
+#spelen .players .mini{display:grid!important}
+#spelen .players.c1 .mini{width:min(30cqw,8rem)}
+#spelen .players.c2 .mini{width:min(28cqw,6.5rem)}
+#spelen .players.c3 .mini{width:min(26cqw,4.6rem)}
+#spelen .players.c4 .mini{width:min(24cqw,3.4rem)}
+.pl-b{gap:.6rem}
+@media (max-width:900px){nav{flex-wrap:wrap;row-gap:.4rem}nav kbd{display:none}}
+@media (max-width:700px){nav{display:flex!important;flex-wrap:wrap;gap:.4rem;padding:.5rem .7rem}nav .logo{flex:1 1 55%;margin:0}nav .round{margin:0}nav .pill{flex:1 1 auto;text-align:center;margin:0}nav button{flex:1 1 auto}nav #fs{display:none}}
+@media (min-width:701px) and (min-aspect-ratio:1/1){
+ html{height:100%}
+ body{height:100dvh;overflow:hidden}
+ section.on{display:flex}
+ #spelen .play{display:grid;flex:1;min-height:0;height:100%;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.95fr);gap:clamp(.6rem,1.5vmin,1.8rem);align-items:stretch}
+ #spelen .play>div{min-height:0;min-width:0}
+ #spelen .play>div:first-child{container-type:size;display:grid;place-items:center}
+ #spelen .wheelwrap{width:min(calc(100cqw - 1rem),calc(100cqh - 3.4rem));margin:1.4rem 0 0}
+ #spelen .play>div:nth-child(2){display:flex;flex-direction:column;justify-content:flex-start;gap:.7rem}
+ #spelen .stage{flex:1;min-height:0}
+ #spelen .play>div.players{align-content:start;align-items:start;overflow-y:auto;scrollbar-width:none;padding:.1rem}
+ #spelen .play>div.players::-webkit-scrollbar{display:none}
+ #spelen[data-f=idle] .play{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.95fr)}
+ #spelen[data-f=wheel] .play{grid-template-columns:minmax(0,1.9fr) minmax(0,.8fr) minmax(0,.6fr)}
+ #spelen[data-f=answer] .play{grid-template-columns:minmax(0,.62fr) minmax(0,.9fr) minmax(0,1.8fr)}
+ #spelen[data-f=answer] .wheelwrap{transform:scale(.94);opacity:.75;filter:saturate(.8)}
+ #spelen .players.c1 .pl,#spelen .players.c2 .pl{padding:.7rem .9rem}
+}
+@media (max-aspect-ratio:1/1),(max-width:700px){
+ html{height:auto}
+ body{height:auto;min-height:100dvh;overflow-y:auto;overflow-x:hidden}
+ section.on{display:block}
+ #spelen .play{display:flex!important;flex-direction:column;gap:.9rem;height:auto}
+ #spelen .play>div:first-child{display:block;container-type:normal}
+ #spelen .wheelwrap{width:min(64vw,36dvh);margin:1.8rem auto .4rem;transition:width .6s cubic-bezier(.2,.8,.2,1),opacity .6s}
+ #spelen[data-f=wheel] .wheelwrap{width:min(88vw,54dvh);transform:none}
+ #spelen[data-f=answer] .wheelwrap{width:min(32vw,17dvh);transform:none;opacity:.7}
+ #spelen .stage{flex:none;min-height:11rem}
+ #spelen .play>div:nth-child(2){display:flex;flex-direction:column;gap:.7rem}
+ #spelen .play>div.players{overflow:visible}
+ #spelen .players.c3,#spelen .players.c4{grid-template-columns:1fr 1fr}
+ #spelen .players.c3 .pl-s,#spelen .players.c4 .pl-s{font-size:.9rem}
+}
 </style>
 </head>
 <body>
@@ -1340,7 +1395,7 @@ function onPlayerMsg(id,d){
   case 'spin':{
    if(id===live.turn&&canSpinNow()){
     const f=typeof d.force==='number'?Math.max(.15,Math.min(2.5,d.force)):null;
-    spin(1,f);
+    spin(d.dir===-1?-1:1,f);
    }else sendTo(id,{k:'turn',...turnInfo()});
    break;
   }
@@ -1476,13 +1531,11 @@ function drawPlayers(){
  updatePills();applyFocus();
  if(!n){box.innerHTML='<div class="pl-empty">Nog geen spelers.<br><small>Scan de QR-code — druk op <kbd>J</kbd></small></div>';return}
  box.innerHTML=rbarHtml()+ids.map(id=>{
-  const p=P(id),[cls,txt]=statusOf(id,p),ok=p.card.filter(c=>c.ok).length;
-  const ans=state.shown&&p.res&&p.res.ans?`<div class="pl-a">“${esc(p.res.ans)}”</div>`:'';
+  const p=P(id),[cls,txt]=statusOf(id,p);
   const mini=p.card.map((c,i)=>`<i class="m ${TYPES_CLS[c.type]} ${c.ok?'ok':''} ${(roundOpen()&&p.pick===i)?'pk':''}"></i>`).join('');
   return `<div class="pl s-${cls} ${live.turn===id&&live.phase==='play'?'isturn':''}" style="--pc:${PCOL[p.idx%25]}" data-id="${id}">
-   <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><span class="pl-n" title="vakjes goed · beste rij">✓${ok}</span><button class="kick" title="Verwijderen">✕</button></div>
-   ${roundOpen()&&p.inRound&&p.conn?stepsHtml(p):''}
-   <div class="pl-b"><div class="pl-txt"><div class="pl-s">${txt}</div>${ans}<div class="pl-l">beste rij ${lineBest(p.card)}/5</div></div><div class="mini">${mini}</div></div>
+   <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><button class="kick" title="Verwijderen">✕</button></div>
+   <div class="pl-b"><div class="pl-s">${txt}</div><div class="mini">${mini}</div></div>
   </div>`}).join('');
 }
 const TYPES_CLS={title:'t-title',year:'t-year',artist:'t-artist',decade:'t-decade',near:'t-near'};

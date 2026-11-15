@@ -42,13 +42,22 @@ header{display:flex;align-items:center;gap:.6rem}
 #banner[class*="cat-"] .s{color:inherit;opacity:.85}
 #banner.turn{background:linear-gradient(135deg,#ff3d8b,#9b5de5);animation:tp 1.2s ease-in-out infinite alternate}
 @keyframes tp{to{box-shadow:0 0 1.6rem #ff3d8b99}}
-/* spinknop */
-#spinbox{display:none;flex-direction:column;gap:.5rem;align-items:stretch}
+/* rad */
+#spinbox{display:none;flex-direction:column;gap:.4rem;align-items:center}
 #spinbox.on{display:flex}
-#spinBtn{font-size:1.5rem;padding:1.2rem;position:relative;overflow:hidden;touch-action:none}
-#spinBtn i{position:absolute;left:0;top:0;bottom:0;width:0;background:#ffffff40;pointer-events:none}
-#spinBtn span{position:relative}
-#spinHint{text-align:center;color:var(--mut);font-size:.85rem}
+#pwrap{position:relative;width:min(80vw,42dvh);aspect-ratio:1;margin:1.3rem auto .2rem;touch-action:none;border-radius:50%;transition:box-shadow .3s,opacity .3s;opacity:.75}
+#pwrap.mine{opacity:1;cursor:grab;box-shadow:0 0 0 .25rem #ffffff22,0 0 2.2rem #ff3d8b99;animation:wglow 1.4s ease-in-out infinite alternate}
+@keyframes wglow{to{box-shadow:0 0 0 .25rem #ffffff55,0 0 3.4rem #ff3d8bcc}}
+#pw{display:block;width:100%;height:100%;border-radius:50%;will-change:transform;pointer-events:none}
+#ppoint{position:absolute;top:-1.1rem;left:50%;transform:translateX(-50%);width:0;height:0;border-left:.95rem solid transparent;border-right:.95rem solid transparent;border-top:1.7rem solid var(--acc2);filter:drop-shadow(0 .15rem .2rem #0008);z-index:2}
+#phub{position:absolute;inset:36%;border-radius:50%;background:radial-gradient(circle at 30% 25%,#3d2468,#150a28 70%);border:.12rem solid #fff6;display:grid;place-items:center;font-weight:900;font-size:min(3.4vw,1.4dvh + .55rem);text-align:center;line-height:1.05;pointer-events:none;z-index:1}
+#swipe{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:3;font-size:2.6rem;animation:swp 1.6s ease-in-out infinite}
+#pwrap.mine #swipe{display:grid}
+#pwrap.touched #swipe{display:none}
+@keyframes swp{0%,100%{transform:translateX(-1.6rem) rotate(-12deg);opacity:.9}50%{transform:translateX(1.6rem) rotate(12deg);opacity:.35}}
+#spinHint{text-align:center;color:#e6d8f5;font-size:.95rem;font-weight:700;min-height:1.3rem;padding:0 .5rem}
+body.wheelon #cardwrap{width:min(100%,36dvh)}
+body.wheelon .c{font-size:1rem}
 /* kaart */
 #cardwrap{width:min(100%,56dvh);margin:0 auto}
 #card{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;aspect-ratio:1;width:100%}
@@ -93,8 +102,8 @@ header{display:flex;align-items:center;gap:.6rem}
  <header><span id="av">🎵</span><b id="name"></b><span id="okc">✓0</span><span id="dot"></span></header>
  <div id="banner"></div>
  <div id="spinbox">
-  <button class="pri" id="spinBtn"><i></i><span>🎡 Houd ingedrukt om te draaien</span></button>
-  <div id="spinHint">Hoe langer je vasthoudt, hoe harder het rad draait. Tik kort voor een willekeurige draai.</div>
+  <div id="pwrap"><div id="ppoint"></div><canvas id="pw" width="720" height="720"></canvas><div id="phub">🎵</div><div id="swipe">👆</div></div>
+  <div id="spinHint"></div>
  </div>
  <div id="cardwrap"><div id="card"></div></div>
  <div id="sheet"></div>
@@ -141,11 +150,11 @@ function on(m){
  if(m.t!=='msg')return;
  const d=m.data||{};
  switch(d.k){
-  case 'state':S=d;draft='';break;
+  case 'state':S=d;draft='';sentSpin=false;if(d.round&&d.round.cat)wheelSet(d.round.cat);break;
   case 'phase':if(S)S.phase=d.phase;break;
-  case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};break;
-  case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';buzz(30);break;
-  case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';buzz([60,40,60]);break;
+  case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};sentSpin=false;break;
+  case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';sentSpin=false;buzz(30);wheelKick();break;
+  case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';sentSpin=false;buzz([60,40,60]);wheelLand(d.cat);break;
   case 'picked':if(S&&S.round){S.round.pick=d.i}break;
   case 'nopick':toast('Dat vakje kan nu niet');break;
   case 'answered':if(S&&S.round){S.round.sub=true;S.round.ans=d.v}buzz(40);break;
@@ -231,10 +240,15 @@ function drawSheet(){
  const go=()=>{if(ok()){inp.blur();send({k:'answer',v:inp.value.trim()})}};
  snd.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};
 }
+function canSpin(){return !!(S&&wsOk&&tvOn&&S.phase==='play'&&mine()&&S.turn.ready&&!sentSpin)}
 function drawSpin(){
- const box=$('#spinbox');
- const can=S&&wsOk&&tvOn&&S.phase==='play'&&mine()&&S.turn.ready;
- box.classList.toggle('on',!!can);
+ const box=$('#spinbox'),r=S&&S.round||{};
+ const show=!!(S&&S.phase==='play'&&!(r.s==='open'&&r.inRound));
+ box.classList.toggle('on',show);document.body.classList.toggle('wheelon',show);
+ const can=canSpin();$('#pwrap').classList.toggle('mine',can);
+ const spinning=r.s==='spin'||sentSpin;
+ $('#spinHint').textContent=can?'👆 Swipe over het rad om te draaien. Hoe harder, hoe harder het draait!':spinning?'Het rad draait…':(S&&S.turn&&S.turn.name?`${S.turn.name} is aan de beurt`:'');
+ $('#phub').textContent=r.cat&&r.s!=='spin'?WS[WI[r.cat]].l:'🎵';
 }
 function draw(){
  $('#dot').className=wsOk&&tvOn?'on':'';
@@ -252,23 +266,80 @@ $('#card').addEventListener('click',e=>{
  if(r.pick!==i){draft='';r.pick=i;draw();send({k:'pick',i})}
 });
 
-/* ---------- houd-ingedrukt-om-te-draaien ---------- */
-(function(){
- const btn=$('#spinBtn'),bar=btn.querySelector('i'),lbl=btn.querySelector('span');
- let t0=0,raf=0,down=false;
- const power=()=>Math.min(1,(performance.now()-t0)/1500);
- function loop(){if(!down)return;bar.style.width=(power()*100)+'%';lbl.textContent=power()>=1?'🔥 MAXIMALE KRACHT! Laat los!':'💨 Kracht opbouwen…';if(power()>.2)buzz(8);raf=requestAnimationFrame(loop)}
- btn.addEventListener('pointerdown',e=>{e.preventDefault();down=true;t0=performance.now();try{btn.setPointerCapture(e.pointerId)}catch{};loop()});
- const rel=e=>{
-  if(!down)return;down=false;cancelAnimationFrame(raf);
-  const held=performance.now()-t0,p=power();bar.style.width='0';lbl.textContent='🎡 Houd ingedrukt om te draaien';
-  buzz(40);
-  send(held<250?{k:'spin'}:{k:'spin',force:.15+p*2.2});
- };
- btn.addEventListener('pointerup',rel);btn.addEventListener('pointercancel',()=>{down=false;cancelAnimationFrame(raf);bar.style.width='0'});
- btn.addEventListener('contextmenu',e=>e.preventDefault());
+/* ---------- rad: swipe om te draaien ---------- */
+const WS=[{t:'title',c:'#38d27a',l:'Titel'},{t:'year',c:'#ff7ab8',l:'Jaar'},{t:'artist',c:'#ffd23f',l:'Artiest'},{t:'decade',c:'#9b5de5',l:'Decennium'},{t:'near',c:'#3fa0ff',l:'± 3 jaar'}];
+const WI=Object.fromEntries(WS.map((x,i)=>[x.t,i]));
+let sentSpin=false;
+let rot=0,vel=0,drag=false,easing=null,raf=0,lastT=0,lastSeg=-1;
+const pw=$('#pw'),pwrap=$('#pwrap');
+(function paint(){
+ const c=pw.getContext('2d'),R=pw.width/2,n=WS.length,sg=2*Math.PI/n;
+ c.translate(R,R);
+ WS.forEach((w,i)=>{
+  const a0=-Math.PI/2+i*sg,a1=a0+sg;
+  const g=c.createRadialGradient(0,0,R*.15,0,0,R);g.addColorStop(0,w.c);g.addColorStop(1,w.c+'cc');
+  c.beginPath();c.moveTo(0,0);c.arc(0,0,R-6,a0,a1);c.closePath();c.fillStyle=g;c.fill();
+  c.lineWidth=5;c.strokeStyle='#ffffff55';c.stroke();
+  c.save();c.rotate(a0+sg/2);c.textAlign='right';c.textBaseline='middle';c.fillStyle=i===2?'#3a2c00':'#fff';
+  let fs=54;c.font=`900 ${fs}px system-ui,-apple-system,sans-serif`;while(c.measureText(w.l).width>205&&fs>26){fs-=2;c.font=`900 ${fs}px system-ui,-apple-system,sans-serif`}
+  c.shadowColor='#0005';c.shadowBlur=6;c.fillText(w.l,R-48,0);c.restore();
+ });
+ c.beginPath();c.arc(0,0,R-3,0,7);c.lineWidth=6;c.strokeStyle='#ffffff66';c.stroke();
 })();
-
+const norm=a=>((a%360)+360)%360;
+const wrap=a=>((a+540)%360)-180;
+function paintRot(){pw.style.transform=`rotate(${rot}deg)`}
+function kick(){if(!raf){lastT=performance.now();raf=requestAnimationFrame(loop)}}
+function loop(t){
+ raf=0;const dt=Math.min(.05,Math.max(.001,(t-lastT)/1000));lastT=t;
+ if(easing){
+  const k=Math.min(1,(t-easing.t0)/easing.dur),e=1-Math.pow(1-k,3);
+  rot=easing.from+(easing.to-easing.from)*e;if(k>=1){easing=null;vel=0}
+ }else if(!drag){
+  const spinning=S&&S.round&&S.round.s==='spin';
+  rot+=vel*dt;vel*=Math.pow(.33,dt);
+  if(spinning&&Math.abs(vel)<160)vel=160*(vel<0?-1:1);
+  if(!spinning&&Math.abs(vel)<4)vel=0;
+ }
+ const seg=Math.floor(norm(-rot)/72);
+ if(seg!==lastSeg){if(lastSeg!==-1&&(Math.abs(vel)>120||drag))buzz(5);lastSeg=seg}
+ paintRot();
+ if(vel||drag||easing||(S&&S.round&&S.round.s==='spin'))kick();
+}
+function wheelKick(){if(Math.abs(vel)<600)vel=(vel<0?-1:1)*700;kick()}
+function wheelLand(cat){
+ const i=WI[cat];if(i==null)return;
+ const T=-(i+.5)*72+(Math.random()-.5)*40,dir=vel<0?-1:1;
+ let d=dir>0?norm(T-rot):-norm(rot-T);
+ if(Math.abs(d)<60)d+=dir*360;
+ easing={from:rot,to:rot+d,t0:performance.now(),dur:1100};vel=0;kick();
+}
+function wheelSet(cat){const i=WI[cat];if(i==null)return;rot=-(i+.5)*72;vel=0;easing=null;paintRot()}
+(function(){
+ let a0=0,samples=[];
+ const ang=e=>{const r=pwrap.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
+ pwrap.addEventListener('pointerdown',e=>{
+  if(!canSpin()||easing)return;e.preventDefault();
+  drag=true;vel=0;a0=ang(e);samples=[[performance.now(),rot]];pwrap.classList.add('touched');
+  try{pwrap.setPointerCapture(e.pointerId)}catch{};kick();
+ });
+ pwrap.addEventListener('pointermove',e=>{
+  if(!drag)return;e.preventDefault();
+  const a=ang(e);rot+=wrap(a-a0);a0=a;
+  const n=performance.now();samples.push([n,rot]);while(samples.length>2&&n-samples[0][0]>110)samples.shift();
+ });
+ const end=e=>{
+  if(!drag)return;drag=false;
+  const n=performance.now(),f=samples[0],l=samples[samples.length-1];
+  let v=0;if(l&&f&&n-l[0]<90&&l[0]>f[0])v=(l[1]-f[1])/((l[0]-f[0])/1000);
+  if(Math.abs(v)<220){vel=v*.3;toast('Swipe wat harder 👆',1400);kick();return}
+  v=Math.max(-4500,Math.min(4500,v));vel=v;sentSpin=true;buzz(40);
+  send({k:'spin',force:Math.min(2.4,.15+Math.abs(v)/800),dir:v<0?-1:1});
+  drawSpin();kick();
+ };
+ pwrap.addEventListener('pointerup',end);pwrap.addEventListener('pointercancel',end);
+ pwrap.addEventListener('contextmenu',e=>e.preventDefault());
+})();
 /* ---------- start ---------- */
 function start(){
  myName=($('#nm').value||'').trim().slice(0,16);
