@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hitster-live
+    runtime: node
+    plan: free
+    buildCommand: "echo geen build nodig"
+    startCommand: node server.js
+    envVars:
+      - key: HOSTED
+        value: "1"
+      - key: TV_KEY
+        generateValue: true

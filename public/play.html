@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#120720">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Hitster Live</title>
+<style>
+:root{--bg:#120720;--card:#221036;--acc:#ff3d8b;--acc2:#ffd23f;--tx:#f7f0ff;--mut:#a794bd;--g:#38d27a;--p:#ff7ab8;--y:#ffd23f;--v:#9b5de5;--b:#3fa0ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 30% 10%,#2a0f45,var(--bg) 60%) fixed;color:var(--tx);min-height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);user-select:none;-webkit-user-select:none;overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;border-radius:1rem;padding:.8rem 1rem;background:#2a1745;font-weight:800;cursor:pointer;touch-action:manipulation}
+button:active{transform:scale(.97)}
+button.pri{background:linear-gradient(135deg,#ff3d8b,#ff7a45);color:#fff;box-shadow:0 .4rem 1.2rem #ff3d8b55}
+button:disabled{opacity:.4}
+input{font:inherit;font-size:1.15rem;color:var(--tx);background:#150a28;border:.15rem solid #4a2a78;border-radius:1rem;padding:.8rem 1rem;width:100%;outline:none;user-select:text;-webkit-user-select:text}
+input:focus{border-color:var(--acc)}
+.screen{display:none;min-height:100dvh;padding:1.2rem}
+.screen.on{display:flex;flex-direction:column}
+#join{justify-content:center;gap:1rem;text-align:center}
+#join h1{margin:0;font-size:2.2rem;letter-spacing:.03em}#join h1 b{color:var(--acc)}
+#join p{color:var(--mut);margin:0}
+/* game */
+#game{gap:.7rem;padding:.8rem .9rem 1.2rem}
+header{display:flex;align-items:center;gap:.6rem}
+#av{font-size:1.9rem}
+#name{font-size:1.2rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#okc{font-weight:900;color:var(--acc2);background:#ffffff14;border-radius:2rem;padding:.2rem .7rem}
+#dot{width:.8rem;height:.8rem;border-radius:50%;background:#f55;box-shadow:0 0 .6rem currentColor;color:#f55}
+#dot.on{background:var(--g);color:var(--g)}
+#banner{border-radius:1.2rem;padding:.8rem 1rem;text-align:center;background:linear-gradient(145deg,#ffffff14,#ffffff06);border:.12rem solid #ffffff22;min-height:4.6rem;display:flex;flex-direction:column;justify-content:center;gap:.15rem;transition:background .3s}
+#banner .t{font-size:1.25rem;font-weight:900;line-height:1.15}
+#banner .s{font-size:.95rem;color:#e6d8f5}
+#banner.good{background:linear-gradient(145deg,#1f8f4f,#146b38);border-color:#6df0a2}
+#banner.bad{background:linear-gradient(145deg,#8f2b3a,#5e1a28);border-color:#ff8a8a}
+#banner.win{background:linear-gradient(90deg,#ffd23f,#ff7ab8,#3fa0ff);color:#150a28;animation:wing 2s linear infinite;background-size:300% 100%}
+#banner.win .s{color:#150a28}
+@keyframes wing{to{background-position:300% 0}}
+#banner.cat-title{background:var(--g);color:#06301a}#banner.cat-year{background:var(--p);color:#40052a}#banner.cat-artist{background:var(--y);color:#3a2c00}#banner.cat-decade{background:var(--v);color:#fff}#banner.cat-near{background:var(--b);color:#031c3a}
+#banner[class*="cat-"] .s{color:inherit;opacity:.85}
+#banner.turn{background:linear-gradient(135deg,#ff3d8b,#9b5de5);animation:tp 1.2s ease-in-out infinite alternate}
+@keyframes tp{to{box-shadow:0 0 1.6rem #ff3d8b99}}
+/* spinknop */
+#spinbox{display:none;flex-direction:column;gap:.5rem;align-items:stretch}
+#spinbox.on{display:flex}
+#spinBtn{font-size:1.5rem;padding:1.2rem;position:relative;overflow:hidden;touch-action:none}
+#spinBtn i{position:absolute;left:0;top:0;bottom:0;width:0;background:#ffffff40;pointer-events:none}
+#spinBtn span{position:relative}
+#spinHint{text-align:center;color:var(--mut);font-size:.85rem}
+/* kaart */
+#cardwrap{width:min(100%,56dvh);margin:0 auto}
+#card{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;aspect-ratio:1;width:100%}
+.c{border-radius:.7rem;position:relative;transition:transform .2s,opacity .25s,filter .25s;display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:#fff}
+.t-title{background:linear-gradient(145deg,#4ee08c,#25b563)}.t-year{background:linear-gradient(145deg,#ff9ac9,#f0629f)}.t-artist{background:linear-gradient(145deg,#ffe066,#f5bf17)}.t-decade{background:linear-gradient(145deg,#b585f2,#8447d6)}.t-near{background:linear-gradient(145deg,#6bb8ff,#2f86e6)}
+.c.dim{opacity:.22;filter:saturate(.5)}
+.c.hl{animation:hl 1s ease-in-out infinite alternate;z-index:1}
+@keyframes hl{to{transform:scale(1.07);box-shadow:0 0 1rem #fff9}}
+.c.pk{background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.45) 0 .55rem,transparent .55rem 1.1rem);outline:.2rem solid #fff;transform:scale(1.06);z-index:2}
+.c.ok::after{content:'✓';text-shadow:0 .1rem .3rem #0007;font-size:1.9rem}
+.c.ok{box-shadow:inset 0 0 0 .2rem #fffc}
+.c.pop{animation:pop .6s cubic-bezier(.2,1.8,.4,1)}
+@keyframes pop{0%{transform:scale(.5)}60%{transform:scale(1.25)}}
+.c.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-.25rem)}75%{transform:translateX(.25rem)}}
+/* antwoord */
+#sheet{display:none;flex-direction:column;gap:.6rem;background:#ffffff0d;border:.12rem solid #ffffff22;border-radius:1.2rem;padding:.8rem}
+#sheet.on{display:flex}
+#sheet label{font-weight:800;font-size:.95rem;color:#e6d8f5}
+#decs{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+#decs button{padding:.8rem 0;font-size:1.05rem;background:#2a1745;border:.15rem solid transparent}
+#decs button.on{background:var(--v);border-color:#fff}
+#sent{text-align:center;font-weight:800;color:#6df0a2}
+#sent em{display:block;color:#fff;font-style:normal;font-size:1.25rem;margin:.2rem 0 .5rem}
+#toast{position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(200%);background:#000c;border:.1rem solid #ffffff30;border-radius:2rem;padding:.55rem 1.1rem;font-weight:800;max-width:90vw;text-align:center;transition:transform .3s;z-index:20;pointer-events:none}
+#toast.on{transform:translateX(-50%) translateY(0)}
+#legend{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;font-size:.72rem;color:#000;font-weight:800;margin-top:.2rem}
+#legend span{border-radius:2rem;padding:.15rem .55rem}
+</style>
+</head>
+<body>
+
+<div class="screen" id="join">
+ <h1>MUZIEK<b>BINGO</b></h1>
+ <p>Hoe heet je?</p>
+ <input id="nm" maxlength="16" placeholder="Je naam" autocomplete="off" autocapitalize="words">
+ <button class="pri" id="go">Meedoen</button>
+ <p id="joinmsg"></p>
+</div>
+
+<div class="screen" id="game">
+ <header><span id="av">🎵</span><b id="name"></b><span id="okc">✓0</span><span id="dot"></span></header>
+ <div id="banner"></div>
+ <div id="spinbox">
+  <button class="pri" id="spinBtn"><i></i><span>🎡 Houd ingedrukt om te draaien</span></button>
+  <div id="spinHint">Hoe langer je vasthoudt, hoe harder het rad draait. Tik kort voor een willekeurige draai.</div>
+ </div>
+ <div id="cardwrap"><div id="card"></div></div>
+ <div id="sheet"></div>
+ <div id="legend">
+  <span style="background:var(--g)">Titel</span><span style="background:var(--p)">Jaartal</span><span style="background:var(--y)">Artiest</span><span style="background:var(--v);color:#fff">Decennium</span><span style="background:var(--b)">± 3 jaar</span>
+ </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const LS={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CAT={title:{c:'Groen',t:'titel van het liedje',cls:'t-title'},year:{c:'Roze',t:'het exacte jaartal',cls:'t-year'},artist:{c:'Geel',t:'de artiest of groep',cls:'t-artist'},decade:{c:'Paars',t:'het decennium',cls:'t-decade'},near:{c:'Blauw',t:'het jaar (± 3 jaar goed)',cls:'t-near'}};
+const DECS=['50s','60s','70s','80s','90s','00s','10s','20s'];
+const DECL=d=>({'00s':'2000','10s':'2010','20s':'2020'}[d]||('19'+d.slice(0,2)));
+
+let myId=LS.get('hl_id',null);if(!myId){myId=(crypto.randomUUID?crypto.randomUUID():'p'+Math.random().toString(36).slice(2)+Date.now().toString(36));LS.set('hl_id',myId)}
+let myName=LS.get('hl_name','');
+let S=null;            // laatste status van de tv
+let ws=null,wsOk=false,tvOn=true,stop=false,retry=0,draft='',lastPop=-1;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function toast(m,ms=2200){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms)}
+const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch{}};
+
+/* ---------- verbinding ---------- */
+function connect(){
+ if(stop)return;
+ ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws?role=player`);
+ ws.onopen=()=>{wsOk=true;retry=0;ws.send(JSON.stringify({t:'hello',id:myId,name:myName}));draw()};
+ ws.onclose=()=>{wsOk=false;draw();if(!stop)setTimeout(connect,Math.min(5000,500+retry++*700))};
+ ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}on(m)};
+}
+const send=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!ws||ws.readyState>1)connect();else send({k:'sync'});wake()}});
+let wl=null;async function wake(){try{if(navigator.wakeLock&&!document.hidden)wl=await navigator.wakeLock.request('screen')}catch{}}
+
+function on(m){
+ if(m.t==='welcome'){tvOn=m.tv;draw();return}
+ if(m.t==='tv'){tvOn=m.on;if(m.on)send({k:'sync'});draw();return}
+ if(m.t==='full'){stop=true;show('join');$('#joinmsg').textContent='Het spel zit vol (max 25 spelers).';return}
+ if(m.t==='kicked'){stop=true;S=null;show('join');$('#joinmsg').textContent=m.why==='elders'?'Je bent op een ander apparaat ingelogd.':'Je bent uit het spel verwijderd.';return}
+ if(m.t!=='msg')return;
+ const d=m.data||{};
+ switch(d.k){
+  case 'state':S=d;draft='';break;
+  case 'phase':if(S)S.phase=d.phase;break;
+  case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};break;
+  case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';buzz(30);break;
+  case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';buzz([60,40,60]);break;
+  case 'picked':if(S&&S.round){S.round.pick=d.i}break;
+  case 'nopick':toast('Dat vakje kan nu niet');break;
+  case 'answered':if(S&&S.round){S.round.sub=true;S.round.ans=d.v}buzz(40);break;
+  case 'editing':if(S&&S.round)S.round.sub=false;break;
+  case 'result':if(S){S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
+ }
+ draw();
+}
+
+/* ---------- tekenen ---------- */
+const mine=()=>S&&S.turn&&S.turn.who===myId;
+function banner(){
+ const b=$('#banner');let cls='',t='',s='';
+ if(!wsOk){t='Verbinding maken…';s='Zorg dat je op hetzelfde wifi zit als de tv.'}
+ else if(!tvOn){t='De tv is niet verbonden';s='Wachten op het tv-scherm…'}
+ else if(!S){t='Even laden…'}
+ else{
+  const r=S.round||{s:'idle'};
+  if(S.phase==='lobby'){t='Wachten tot het spel start…';s='Dit is jouw bingokaart.'}
+  else if(r.s==='spin'){t='Het rad draait… 🎡';s=S.turn&&S.turn.spinnerName?S.turn.spinnerName+' draait':''}
+  else if(r.s==='open'){
+   const c=CAT[r.cat];cls='cat-'+r.cat;
+   if(!r.inRound){t='Je doet mee vanaf de volgende ronde';cls=''}
+   else if(r.sub){t=`${c.c}: antwoord verstuurd ✓`;s='Wachten op de onthulling…'}
+   else if(r.pick==null){t=`${c.c}: noem ${c.t}`;s=`Tik een ${c.c.toLowerCase()} vakje op je kaart`}
+   else{t=`${c.c}: noem ${c.t}`;s='Vul je antwoord hieronder in'}
+  }else if(r.s==='revealed'){
+   const x=r.res;
+   if(!x){t='Het nummer is onthuld';s=mine()&&S.turn.ready?'':'Wachten op de volgende ronde'}
+   else if(x.ok){cls='good';t='Goed! ✓';s='Het was: '+x.truth}
+   else if(x.none){cls='bad';t='Geen antwoord';s='Het was: '+x.truth}
+   else{cls='bad';t='Helaas ✗';s=`Het was: ${x.truth}`}
+  }else{
+   if(mine()&&S.turn.ready){cls='turn';t='Jij bent aan de beurt!';s='Draai het rad 🎡'}
+   else{t=S.turn&&S.turn.name?`🎡 ${S.turn.name} is aan de beurt`:'Wachten op de volgende ronde…'}
+  }
+  if(S.won){cls='win';t='🎉 BINGO! 🎉';s=t==='🎉 BINGO! 🎉'&&r.res?'Het was: '+r.res.truth:'Je hebt een rij vol!'}
+  else if(r.s==='revealed'&&mine()&&S.turn.ready&&r.res){s+=(s?' · ':'')+'Jij mag draaien!'}
+ }
+ b.className=cls;b.innerHTML=`<div class="t">${esc(t)}</div>${s?`<div class="s">${esc(s)}</div>`:''}`;
+}
+function drawCard(){
+ const c=$('#card');if(!S){c.innerHTML='';return}
+ const r=S.round||{},open=r.s==='open'&&r.inRound;
+ if(c.children.length!==25){c.innerHTML=Array.from({length:25},(_,i)=>`<div class="c" data-i="${i}"></div>`).join('')}
+ S.card.forEach((x,i)=>{
+  const el=c.children[i];
+  let cls='c '+CAT[x.t].cls;
+  if(x.ok)cls+=' ok';
+  if(open&&!x.ok){if(x.t===r.cat){cls+=r.pick===i?' pk':(r.sub?'':' hl');if(r.sub&&r.pick!==i)cls+=' dim'}else cls+=' dim'}
+  if(open&&r.pick===i&&r.sub)cls+=' pk';
+  if(lastPop===i&&x.ok&&r.s==='revealed')cls+=' pop';
+  if(el.className!==cls)el.className=cls;
+ });
+ lastPop=-1;
+ $('#okc').textContent='✓'+S.card.filter(x=>x.ok).length;
+}
+function drawSheet(){
+ const sh=$('#sheet'),r=S&&S.round;
+ const need=S&&r&&r.s==='open'&&r.inRound&&r.pick!=null;
+ if(!need){sh.className='';sh.innerHTML='';sh.dataset.key='';return}
+ const key=r.cat+'|'+r.pick+'|'+(r.sub?'s':'e');
+ if(sh.dataset.key===key)return;       // niet opnieuw opbouwen (toetsenbord blijft open)
+ sh.dataset.key=key;sh.className='on';
+ if(r.sub){
+  sh.innerHTML=`<div id="sent">Verstuurd:<em>${esc(r.cat==='decade'?"jaren '"+r.ans.slice(0,2):r.ans)}</em><button id="edit">Wijzigen</button></div>`;
+  $('#edit').onclick=()=>send({k:'edit'});return;
+ }
+ const cat=r.cat;
+ if(cat==='decade'){
+  sh.innerHTML=`<label>Welk decennium?</label><div id="decs">${DECS.map(d=>`<button data-d="${d}" class="${draft===d?'on':''}">${DECL(d)}</button>`).join('')}</div><button class="pri" id="snd" ${draft?'':'disabled'}>Versturen</button>`;
+  $('#decs').onclick=e=>{const b=e.target.closest('button');if(!b)return;draft=b.dataset.d;document.querySelectorAll('#decs button').forEach(x=>x.classList.toggle('on',x===b));$('#snd').disabled=false;send({k:'typing'})};
+  $('#snd').onclick=()=>draft&&send({k:'answer',v:draft});
+  return;
+ }
+ const num=cat==='year'||cat==='near';
+ sh.innerHTML=`<label>${num?'Welk jaar?':cat==='title'?'Titel van het nummer':'Artiest of groep'}</label><input id="ans" ${num?'inputmode="numeric" pattern="[0-9]*" maxlength="4"':'autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="50"'} placeholder="${num?'bijv. 1985':'Typ je antwoord'}" value="${esc(draft)}"><button class="pri" id="snd">Versturen</button>`;
+ const inp=$('#ans'),snd=$('#snd');
+ const ok=()=>num?/^\d{4}$/.test(inp.value.trim()):inp.value.trim().length>0;
+ snd.disabled=!ok();
+ let lt=0;
+ inp.oninput=()=>{if(num)inp.value=inp.value.replace(/\D/g,'').slice(0,4);draft=inp.value;snd.disabled=!ok();const n=Date.now();if(n-lt>1000){lt=n;send({k:'typing'})}};
+ const go=()=>{if(ok()){inp.blur();send({k:'answer',v:inp.value.trim()})}};
+ snd.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};
+}
+function drawSpin(){
+ const box=$('#spinbox');
+ const can=S&&wsOk&&tvOn&&S.phase==='play'&&mine()&&S.turn.ready;
+ box.classList.toggle('on',!!can);
+}
+function draw(){
+ $('#dot').className=wsOk&&tvOn?'on':'';
+ if(S){$('#av').textContent=S.av;$('#name').textContent=S.name;myName=S.name}
+ banner();drawCard();drawSheet();drawSpin();
+}
+
+/* ---------- kaart aantikken ---------- */
+$('#card').addEventListener('click',e=>{
+ const el=e.target.closest('.c');if(!el||!S)return;
+ const i=+el.dataset.i,r=S.round||{},x=S.card[i];
+ if(r.s!=='open'||!r.inRound){toast(S.phase==='lobby'?'Het spel is nog niet gestart':'Wacht op de volgende ronde');return}
+ if(r.sub){toast('Je antwoord is al verstuurd (tik op Wijzigen)');return}
+ if(x.ok||x.t!==r.cat){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');toast(x.ok?'Dat vakje heb je al':`Kies een ${CAT[r.cat].c.toLowerCase()} vakje`);return}
+ if(r.pick!==i){draft='';r.pick=i;draw();send({k:'pick',i})}
+});
+
+/* ---------- houd-ingedrukt-om-te-draaien ---------- */
+(function(){
+ const btn=$('#spinBtn'),bar=btn.querySelector('i'),lbl=btn.querySelector('span');
+ let t0=0,raf=0,down=false;
+ const power=()=>Math.min(1,(performance.now()-t0)/1500);
+ function loop(){if(!down)return;bar.style.width=(power()*100)+'%';lbl.textContent=power()>=1?'🔥 MAXIMALE KRACHT! Laat los!':'💨 Kracht opbouwen…';if(power()>.2)buzz(8);raf=requestAnimationFrame(loop)}
+ btn.addEventListener('pointerdown',e=>{e.preventDefault();down=true;t0=performance.now();try{btn.setPointerCapture(e.pointerId)}catch{};loop()});
+ const rel=e=>{
+  if(!down)return;down=false;cancelAnimationFrame(raf);
+  const held=performance.now()-t0,p=power();bar.style.width='0';lbl.textContent='🎡 Houd ingedrukt om te draaien';
+  buzz(40);
+  send(held<250?{k:'spin'}:{k:'spin',force:.15+p*2.2});
+ };
+ btn.addEventListener('pointerup',rel);btn.addEventListener('pointercancel',()=>{down=false;cancelAnimationFrame(raf);bar.style.width='0'});
+ btn.addEventListener('contextmenu',e=>e.preventDefault());
+})();
+
+/* ---------- start ---------- */
+function start(){
+ myName=($('#nm').value||'').trim().slice(0,16);
+ if(!myName){$('#nm').focus();return}
+ LS.set('hl_name',myName);stop=false;show('game');wake();draw();connect();
+}
+$('#go').onclick=start;$('#nm').onkeydown=e=>{if(e.key==='Enter')start()};
+$('#nm').value=myName;
+if(myName){show('game');wake();draw();connect()}else show('join');
+</script>
+</body>
+</html>

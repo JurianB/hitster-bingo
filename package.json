@@ -1,0 +1,8 @@
+{
+  "name": "hitster-live",
+  "version": "1.0.0",
+  "description": "Hitster Live woonkamerspel: tv + telefoons via websockets",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
