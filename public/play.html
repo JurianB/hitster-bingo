@@ -51,7 +51,13 @@ header{display:flex;align-items:center;gap:.6rem}
 #pw{display:block;width:100%;height:100%;border-radius:50%;will-change:transform;pointer-events:none}
 #ppoint{position:absolute;top:-1.1rem;left:50%;transform:translateX(-50%);width:0;height:0;border-left:.95rem solid transparent;border-right:.95rem solid transparent;border-top:1.7rem solid var(--acc2);filter:drop-shadow(0 .15rem .2rem #0008);z-index:2}
 #phub{position:absolute;inset:36%;border-radius:50%;background:radial-gradient(circle at 30% 25%,#3d2468,#150a28 70%);border:.12rem solid #fff6;display:grid;place-items:center;font-weight:900;font-size:min(3.4vw,1.4dvh + .55rem);text-align:center;line-height:1.05;pointer-events:none;z-index:1}
-#swipe{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:3;font-size:2.6rem;animation:swp 1.6s ease-in-out infinite}
+#swipe{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:3;font-size:3.4rem;animation:swp 1.4s ease-in-out infinite}
+#swipeLbl{position:absolute;left:50%;bottom:-.2rem;transform:translateX(-50%);background:#fff;color:#c01a63;font-weight:900;font-size:1.15rem;letter-spacing:.06em;padding:.45rem 1.2rem;border-radius:2rem;box-shadow:0 .4rem 1.4rem #0009;z-index:4;display:none;white-space:nowrap;animation:lblp .9s ease-in-out infinite alternate}
+#pwrap.mine #swipeLbl{display:block}#pwrap.touched #swipeLbl{display:none}
+@keyframes lblp{to{transform:translateX(-50%) scale(1.08)}}
+#pwrap.mine::before{content:'';position:absolute;inset:-.9rem;border-radius:50%;border:.3rem solid #ff3d8b;opacity:0;animation:ringp 1.4s ease-out infinite;pointer-events:none}
+@keyframes ringp{0%{opacity:.9;transform:scale(.96)}100%{opacity:0;transform:scale(1.12)}}
+body.myturn #spinHint{color:#fff;font-size:1.15rem;font-weight:900}
 #pwrap.mine #swipe{display:grid}
 #pwrap.touched #swipe{display:none}
 @keyframes swp{0%,100%{transform:translateX(-1.6rem) rotate(-12deg);opacity:.9}50%{transform:translateX(1.6rem) rotate(12deg);opacity:.35}}
@@ -94,6 +100,8 @@ body.wheelon .c{font-size:1rem}
  <h1>MUZIEK<b>BINGO</b></h1>
  <p>Hoe heet je?</p>
  <input id="nm" maxlength="16" placeholder="Je naam" autocomplete="off" autocapitalize="words">
+ <input id="rc" maxlength="4" placeholder="ROOMCODE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-align:center;letter-spacing:.35em;font-weight:900;text-transform:uppercase">
+ <p style="font-size:.85rem">De roomcode staat op de tv, naast de QR-code.</p>
  <button class="pri" id="go">Meedoen</button>
  <p id="joinmsg"></p>
 </div>
@@ -102,7 +110,7 @@ body.wheelon .c{font-size:1rem}
  <header><span id="av">🎵</span><b id="name"></b><span id="okc">✓0</span><span id="dot"></span></header>
  <div id="banner"></div>
  <div id="spinbox">
-  <div id="pwrap"><div id="ppoint"></div><canvas id="pw" width="720" height="720"></canvas><div id="phub">🎵</div><div id="swipe">👆</div></div>
+  <div id="pwrap"><div id="ppoint"></div><canvas id="pw" width="720" height="720"></canvas><div id="phub">🎵</div><div id="swipe">👆</div><div id="swipeLbl">SWIPE OM TE DRAAIEN</div></div>
   <div id="spinHint"></div>
  </div>
  <div id="cardwrap"><div id="card"></div></div>
@@ -123,6 +131,7 @@ const DECL=d=>({'00s':'2000','10s':'2010','20s':'2020'}[d]||('19'+d.slice(0,2)))
 
 let myId=LS.get('hl_id',null);if(!myId){myId=(crypto.randomUUID?crypto.randomUUID():'p'+Math.random().toString(36).slice(2)+Date.now().toString(36));LS.set('hl_id',myId)}
 let myName=LS.get('hl_name','');
+let myCode=((new URLSearchParams(location.search).get('c'))||LS.get('hl_code','')||'').toUpperCase().slice(0,4);
 let S=null;            // laatste status van de tv
 let ws=null,wsOk=false,tvOn=true,stop=false,retry=0,draft='',lastPop=-1;
 
@@ -134,7 +143,7 @@ const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch{}};
 function connect(){
  if(stop)return;
  ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws?role=player`);
- ws.onopen=()=>{wsOk=true;retry=0;ws.send(JSON.stringify({t:'hello',id:myId,name:myName}));draw()};
+ ws.onopen=()=>{wsOk=true;retry=0;ws.send(JSON.stringify({t:'hello',id:myId,name:myName,code:myCode}));draw()};
  ws.onclose=()=>{wsOk=false;draw();if(!stop)setTimeout(connect,Math.min(5000,500+retry++*700))};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}on(m)};
 }
@@ -145,6 +154,7 @@ let wl=null;async function wake(){try{if(navigator.wakeLock&&!document.hidden)wl
 function on(m){
  if(m.t==='welcome'){tvOn=m.tv;draw();return}
  if(m.t==='tv'){tvOn=m.on;if(m.on)send({k:'sync'});draw();return}
+ if(m.t==='badcode'){stop=true;S=null;show('join');$('#rc').value='';$('#joinmsg').textContent=m.locked?'Te veel pogingen. Probeer het over een paar minuten opnieuw.':'Onjuiste roomcode. Kijk op de tv.';return}
  if(m.t==='full'){stop=true;show('join');$('#joinmsg').textContent='Het spel zit vol (max 25 spelers).';return}
  if(m.t==='kicked'){stop=true;S=null;show('join');$('#joinmsg').textContent=m.why==='elders'?'Je bent op een ander apparaat ingelogd.':'Je bent uit het spel verwijderd.';return}
  if(m.t!=='msg')return;
@@ -153,13 +163,14 @@ function on(m){
   case 'state':S=d;draft='';sentSpin=false;if(d.round&&d.round.cat)wheelSet(d.round.cat);break;
   case 'phase':if(S)S.phase=d.phase;break;
   case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};sentSpin=false;break;
+  case 'anim':wheelAnim(d);break;
   case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';sentSpin=false;buzz(30);wheelKick();break;
   case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';sentSpin=false;buzz([60,40,60]);wheelLand(d.cat);break;
   case 'picked':if(S&&S.round){S.round.pick=d.i}break;
   case 'nopick':toast('Dat vakje kan nu niet');break;
   case 'answered':if(S&&S.round){S.round.sub=true;S.round.ans=d.v}buzz(40);break;
   case 'editing':if(S&&S.round)S.round.sub=false;break;
-  case 'result':if(S){S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
+  case 'result':if(S){if(d.won&&!S.won)bingoConfetti();S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
  }
  draw();
 }
@@ -168,7 +179,7 @@ function on(m){
 const mine=()=>S&&S.turn&&S.turn.who===myId;
 function banner(){
  const b=$('#banner');let cls='',t='',s='';
- if(!wsOk){t='Verbinding maken…';s='Zorg dat je op hetzelfde wifi zit als de tv.'}
+ if(!wsOk){t='Verbinding maken…';s='Zorg dat je op hetzelfde wifi zit als de tv.';if(S&&S.round&&S.round.s==='open'&&S.round.pick!=null&&!S.round.sub){cls='bad';t='⚠️ Verbinding weg';s='Je gekozen vakje blijft staan. Even wachten, we verbinden opnieuw…'}}
  else if(!tvOn){t='De tv is niet verbonden';s='Wachten op het tv-scherm…'}
  else if(!S){t='Even laden…'}
  else{
@@ -188,7 +199,7 @@ function banner(){
    else if(x.none){cls='bad';t='Geen antwoord';s='Het was: '+x.truth}
    else{cls='bad';t='Helaas ✗';s=`Het was: ${x.truth}`}
   }else{
-   if(mine()&&S.turn.ready){cls='turn';t='Jij bent aan de beurt!';s='Draai het rad 🎡'}
+   if(mine()&&S.turn.ready){cls='turn';t='🎡 JIJ MAG DRAAIEN!';s='Swipe over het rad hieronder'}
    else{t=S.turn&&S.turn.name?`🎡 ${S.turn.name} is aan de beurt`:'Wachten op de volgende ronde…'}
   }
   if(S.won){cls='win';t='🎉 BINGO! 🎉';s=t==='🎉 BINGO! 🎉'&&r.res?'Het was: '+r.res.truth:'Je hebt een rij vol!'}
@@ -245,7 +256,8 @@ function drawSpin(){
  const box=$('#spinbox'),r=S&&S.round||{};
  const show=!!(S&&S.phase==='play'&&!(r.s==='open'&&r.inRound));
  box.classList.toggle('on',show);document.body.classList.toggle('wheelon',show);
- const can=canSpin();$('#pwrap').classList.toggle('mine',can);
+ const can=canSpin();$('#pwrap').classList.toggle('mine',can);document.body.classList.toggle('myturn',can);
+ if(can&&!wasCan){buzz([120,70,120,70,200]);pwrap.classList.remove('touched')}wasCan=can;
  const spinning=r.s==='spin'||sentSpin;
  $('#spinHint').textContent=can?'👆 Swipe over het rad om te draaien. Hoe harder, hoe harder het draait!':spinning?'Het rad draait…':(S&&S.turn&&S.turn.name?`${S.turn.name} is aan de beurt`:'');
  $('#phub').textContent=r.cat&&r.s!=='spin'?WS[WI[r.cat]].l:'🎵';
@@ -269,7 +281,7 @@ $('#card').addEventListener('click',e=>{
 /* ---------- rad: swipe om te draaien ---------- */
 const WS=[{t:'title',c:'#38d27a',l:'Titel'},{t:'year',c:'#ff7ab8',l:'Jaar'},{t:'artist',c:'#ffd23f',l:'Artiest'},{t:'decade',c:'#9b5de5',l:'Decennium'},{t:'near',c:'#3fa0ff',l:'± 3 jaar'}];
 const WI=Object.fromEntries(WS.map((x,i)=>[x.t,i]));
-let sentSpin=false;
+let sentSpin=false,wasCan=false,animSeen=false;
 let rot=0,vel=0,drag=false,easing=null,raf=0,lastT=0,lastSeg=-1;
 const pw=$('#pw'),pwrap=$('#pwrap');
 (function paint(){
@@ -293,12 +305,12 @@ function kick(){if(!raf){lastT=performance.now();raf=requestAnimationFrame(loop)
 function loop(t){
  raf=0;const dt=Math.min(.05,Math.max(.001,(t-lastT)/1000));lastT=t;
  if(easing){
-  const k=Math.min(1,(t-easing.t0)/easing.dur),e=1-Math.pow(1-k,3);
+  const k=Math.min(1,(t-easing.t0)/easing.dur),e=easing.tv?tvEase(k):1-Math.pow(1-k,3);
   rot=easing.from+(easing.to-easing.from)*e;if(k>=1){easing=null;vel=0}
  }else if(!drag){
   const spinning=S&&S.round&&S.round.s==='spin';
   rot+=vel*dt;vel*=Math.pow(.33,dt);
-  if(spinning&&Math.abs(vel)<160)vel=160*(vel<0?-1:1);
+  if(spinning&&!animSeen&&Math.abs(vel)<160)vel=160*(vel<0?-1:1);
   if(!spinning&&Math.abs(vel)<4)vel=0;
  }
  const seg=Math.floor(norm(-rot)/72);
@@ -306,9 +318,19 @@ function loop(t){
  paintRot();
  if(vel||drag||easing||(S&&S.round&&S.round.s==='spin'))kick();
 }
-function wheelKick(){if(Math.abs(vel)<600)vel=(vel<0?-1:1)*700;kick()}
+const bez=(x1,y1,x2,y2)=>t=>{if(t<=0)return 0;if(t>=1)return 1;let lo=0,hi=1,u=t;for(let i=0;i<28;i++){const x=3*(1-u)*(1-u)*u*x1+3*(1-u)*u*u*x2+u*u*u;if(x<t)lo=u;else hi=u;u=(lo+hi)/2}return 3*(1-u)*(1-u)*u*y1+3*(1-u)*u*u*y2+u*u*u};
+const tvEase=bez(.12,.7,.1,1);
+function wheelAnim(d){
+ if(typeof d.extra!=='number')return;
+ drag=false;animSeen=true;const dir=d.extra<0?-1:1,turns=Math.floor(Math.abs(d.extra)/360);
+ const frac=dir>0?norm(d.fin-rot):norm(rot-d.fin);
+ easing={from:rot,to:rot+dir*(360*turns+frac),t0:performance.now(),dur:d.dur*1000,tv:true};vel=0;kick();
+}
+function wheelKick(){animSeen=false;if(Math.abs(vel)<600)vel=(vel<0?-1:1)*700;kick()}
 function wheelLand(cat){
  const i=WI[cat];if(i==null)return;
+ if(easing&&easing.tv)return;
+ if(Math.floor(norm(-rot)/72)===i&&!easing)return;
  const T=-(i+.5)*72+(Math.random()-.5)*40,dir=vel<0?-1:1;
  let d=dir>0?norm(T-rot):-norm(rot-T);
  if(Math.abs(d)<60)d+=dir*360;
@@ -342,13 +364,33 @@ function wheelSet(cat){const i=WI[cat];if(i==null)return;rot=-(i+.5)*72;vel=0;ea
 })();
 /* ---------- start ---------- */
 function start(){
- myName=($('#nm').value||'').trim().slice(0,16);
+ myName=($('#nm').value||'').trim().slice(0,16);myCode=($('#rc').value||'').trim().toUpperCase();
  if(!myName){$('#nm').focus();return}
- LS.set('hl_name',myName);stop=false;show('game');wake();draw();connect();
+ if(myCode.length!==4){$('#rc').focus();$('#joinmsg').textContent='Vul de roomcode van 4 letters in.';return}
+ $('#joinmsg').textContent='';LS.set('hl_name',myName);LS.set('hl_code',myCode);stop=false;show('game');wake();draw();connect();
 }
-$('#go').onclick=start;$('#nm').onkeydown=e=>{if(e.key==='Enter')start()};
-$('#nm').value=myName;
-if(myName){show('game');wake();draw();connect()}else show('join');
+$('#go').onclick=start;$('#nm').onkeydown=e=>{if(e.key==='Enter')$('#rc').focus()};$('#rc').onkeydown=e=>{if(e.key==='Enter')start()};$('#rc').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'')};
+$('#nm').value=myName;$('#rc').value=myCode;
+if(myName&&myCode.length===4){show('game');wake();draw();connect()}else show('join');
+
+/* ---------- confetti bij bingo ---------- */
+const cf=document.createElement('canvas');cf.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90';document.body.appendChild(cf);
+let cparts=[],cOn=false;
+function bingoConfetti(){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ cf.width=innerWidth*devicePixelRatio;cf.height=innerHeight*devicePixelRatio;
+ const cols=['#ff3d8b','#ffd23f','#38d27a','#3fa0ff','#9b5de5','#fff'];
+ const burst=(x,n)=>{for(let i=0;i<n;i++){const a=-Math.PI/2+(Math.random()-.5)*1.8,sp=(9+Math.random()*13)*devicePixelRatio;cparts.push({x:x*devicePixelRatio,y:innerHeight*.75*devicePixelRatio,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:(6+Math.random()*8)*devicePixelRatio,c:cols[i%6],rot:Math.random()*6,vr:(Math.random()-.5)*.4,life:1})}};
+ [0,350,700,1100,1600].forEach((d,i)=>setTimeout(()=>{burst(innerWidth*.2,60);burst(innerWidth*.8,60);burst(innerWidth*.5,70)},d));
+ buzz([100,50,100,50,100,50,400]);
+ if(!cOn){cOn=true;requestAnimationFrame(cTick)}
+}
+function cTick(){
+ const c=cf.getContext('2d');c.clearRect(0,0,cf.width,cf.height);
+ cparts=cparts.filter(q=>q.life>0&&q.y<cf.height+40);
+ for(const q of cparts){q.vy+=.45*devicePixelRatio;q.vx*=.99;q.x+=q.vx;q.y+=q.vy;q.rot+=q.vr;q.life-=.007;c.save();c.globalAlpha=Math.max(0,Math.min(1,q.life*1.8));c.translate(q.x,q.y);c.rotate(q.rot);c.fillStyle=q.c;c.fillRect(-q.r/2,-q.r/3,q.r,q.r*.6);c.restore()}
+ if(cparts.length)requestAnimationFrame(cTick);else{cOn=false}
+}
 </script>
 </body>
 </html>

@@ -18,3 +18,5 @@ Werkt joinen niet? Sta Node.js toe in Windows Firewall (privénetwerk) en gebrui
 
 
 Op de telefoon draai je het rad door eroverheen te swipen (hoe harder, hoe harder het draait). De tv-weergave past zich aan: rad groot tijdens het draaien, spelers groot tijdens het antwoorden, en een fullscreen onthulling zodra iedereen heeft geantwoord. Werkt op breedbeeld-, tablet- en staande schermen.
+
+**Roomcode / op afstand spelen:** de tv toont naast de QR-code een roomcode van 4 letters. Telefoons op hetzelfde wifi scannen de QR-code (de code zit erin). Spelers op een andere plek gaan naar het adres van de server (bijv. je Render-URL + `/play`) en vullen de code in. Vaste code instellen kan met de omgevingsvariabele `ROOM_CODE`. Voor spelen op afstand moet de server online staan (zie `render.yaml`).

@@ -618,6 +618,47 @@ nav .pill{margin-left:.2rem}
  #spelen .players.c3,#spelen .players.c4{grid-template-columns:1fr 1fr}
  #spelen .players.c3 .pl-s,#spelen .players.c4 .pl-s{font-size:.9rem}
 }
+
+/* ===== v4 ===== */
+#fx{z-index:80}
+#lobFs{position:absolute;top:1rem;right:1rem;z-index:2}
+.lob-code{display:flex;align-items:center;gap:.8rem;background:#0006;border:.14rem solid var(--acc);border-radius:1rem;padding:.35rem 1.1rem}
+.lob-code span{font-size:.8rem;font-weight:800;letter-spacing:.14em;color:var(--mut)}
+.lob-code b{font-size:min(3rem,6vh);letter-spacing:.22em;color:#fff;font-family:ui-monospace,Consolas,monospace;padding-left:.22em}
+/* spelers: rustig en consistent (geen gloed) */
+#spelen .play>div.players{padding:.55rem;gap:.7rem}
+.pl,.pl.isturn,.pl.s-done,.pl.s-win{box-shadow:none!important;transform:none!important}
+.pl{transition:border-color .3s,background .3s,opacity .3s}
+.pl.isturn{background:linear-gradient(145deg,#ffffff1f,#ffffff0b);border-color:var(--pc)}
+.pl.s-done{border-color:#38d27a;background:#38d27a14}
+.pl.s-win{border-color:#ffd23f;background:#ffd23f18}
+.pl.s-warn{border-color:#ffb347;background:#ffb34718}.s-warn .pl-s{color:#ffc46b}
+.rb-w{display:block;color:#ffc46b!important;font-weight:800;margin-top:.15rem}
+/* onthulling: categorie als laatste, extra impact */
+.rv-m{gap:min(1.4vh,.8rem)}
+.rv-it{position:relative;min-width:0}
+.rv-it .rv-c{opacity:0;animation:rvIn .8s var(--d) cubic-bezier(.2,1.1,.3,1) both}
+.rv-it.last .rv-c{animation:rvSlam .9s var(--d) cubic-bezier(.2,1.7,.3,1) both}
+@keyframes rvIn{from{opacity:0;transform:translateY(1.2rem) scale(.96)}to{opacity:1;transform:none}}
+@keyframes rvSlam{0%{opacity:0;transform:scale(3.2);filter:blur(14px)}60%{opacity:1;transform:scale(.94);filter:none}100%{opacity:1;transform:scale(1)}}
+.rv-it .rv-title,.rv-it .rv-artist,.rv-it .rv-year{animation:none}
+.rv-title.rv-it,.rv-artist.rv-it,.rv-year.rv-it{animation:none}
+.rv-title .rv-c{font-size:min(5.2vw,9vh);font-weight:900;line-height:1.05}
+.rv-artist .rv-c{font-size:min(3vw,5.5vh);color:#d8cfe8}
+.rv-year .rv-c{font-size:min(11vw,20vh);font-weight:900;line-height:1;color:#ffd23f;text-shadow:0 0 3rem #ffd23f77}
+.rv-title.last .rv-c{font-size:min(7vw,12.5vh);color:#fff;text-shadow:0 0 3rem #ff3d8b99}
+.rv-artist.last .rv-c{font-size:min(5.6vw,10vh);color:#fff;text-shadow:0 0 3rem #ff3d8b99}
+.rv-year.last .rv-c{font-size:min(14vw,25vh)}
+.rv-q{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:min(7vw,12vh);font-weight:900;letter-spacing:.25em;color:#ffffff;opacity:0;animation:rvq calc(var(--d) + .05s) linear both,rvwob .18s linear infinite alternate;pointer-events:none;text-shadow:0 0 2rem #ff3d8b}
+@keyframes rvq{0%,30%{opacity:0}45%{opacity:.9}97%{opacity:.9}100%{opacity:0}}
+@keyframes rvwob{from{transform:translateY(-50%) rotate(-1.2deg)}to{transform:translateY(-50%) rotate(1.2deg) scale(1.03)}}
+.rv-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;animation:rvflash .8s 3s ease-out forwards}
+@keyframes rvflash{0%{opacity:.85}100%{opacity:0}}
+.rv-in{animation:rvshake .55s 3s both}
+@keyframes rvshake{0%,100%{transform:none}15%{transform:translate(-.6rem,.3rem)}30%{transform:translate(.6rem,-.3rem)}45%{transform:translate(-.4rem,-.2rem)}60%{transform:translate(.4rem,.2rem)}80%{transform:translate(-.2rem,0)}}
+.rv-p{animation:chipin .6s calc(3.9s + var(--i)*.12s) cubic-bezier(.2,1.6,.4,1) both}
+.rv-hint{opacity:0;animation:rise .6s 4.6s both}
+.rv-hint i{animation:rvbar 18s 4.6s linear forwards}
 </style>
 </head>
 <body>
@@ -672,16 +713,18 @@ nav .pill{margin-left:.2rem}
 </section>
 
 <div id="lobby">
+ <button id="lobFs" title="Volledig scherm (F)">⛶ Volledig scherm</button>
  <div class="lob-card">
   <div class="lob-l">
    <div class="lob-title">MUZIEK<b>BINGO</b> <span>LIVE</span></div>
    <div class="qrbox"><canvas id="qr"></canvas></div>
    <div class="lob-url" id="lobUrl"></div>
+   <div class="lob-code"><span>ROOMCODE</span><b id="lobCode">····</b></div>
    <div class="lob-alt" id="lobAlt"></div>
   </div>
   <div class="lob-r">
    <h2>Doe mee met je telefoon!</h2>
-   <ol><li>Zorg dat je telefoon op <b>hetzelfde wifi</b> zit</li><li>Scan de QR-code met je camera</li><li>Vul je naam in en speel mee</li></ol>
+   <ol><li>Dezelfde wifi als de tv? Scan de <b>QR-code</b> met je camera</li><li>Speel je op afstand? Ga naar het adres en vul de <b>roomcode</b> in</li><li>Vul je naam in en speel mee</li></ol>
    <div class="lob-pl" id="lobPl"></div>
    <button class="pri big" id="lobStart" disabled>Wacht op spelers…</button>
    <div class="mut lob-sub" id="lobSub"></div>
@@ -1209,7 +1252,7 @@ async function spin(dir,force){
  spinning=true;state.cur=null;render();
  document.querySelectorAll('.wheelwrap').forEach(w=>w.classList.add('spinning'));
  document.querySelectorAll('canvas.wheel').forEach(w=>{w.style.transition=`transform ${dur}s cubic-bezier(.12,.7,.1,1)`;void w.offsetWidth});
- rot+=extra;document.querySelectorAll('canvas.wheel').forEach(w=>w.style.transform=`rotate(${rot}deg)`);
+ rot+=extra;sendAll({k:'anim',dur,extra,fin:((rot%360)+360)%360});document.querySelectorAll('canvas.wheel').forEach(w=>w.style.transform=`rotate(${rot}deg)`);
  await new Promise(r=>setTimeout(r,dur*1000+200));
  spinning=false;landWheel();
  state.drawn.push(key(s));state.cur=key(s);state.shown=false;(state.catOf=state.catOf||{})[key(s)]=CATS[i].type;saveState();liveRoundStart();
@@ -1349,12 +1392,14 @@ function ensureP(id,name){
  if(name)p.name=name;
  p.conn=true;return p;
 }
+let roomCode='';
 function onServer(m){
+ if(m.t==='room'){roomCode=m.code;renderLobby();return}
  if(m.t==='replaced'){document.body.innerHTML='<h1 style="padding:2rem">Dit tv-scherm is overgenomen door een ander venster.</h1>';return}
  if(m.t==='roster'){
   const on=new Set(m.players.filter(x=>x.connected).map(x=>x.id));
   m.players.forEach(x=>{if(!P(x.id)&&x.connected)ensureP(x.id,x.name);else if(P(x.id)){P(x.id).name=x.name}});
-  live.order.forEach(id=>{P(id).conn=on.has(id)});
+  live.order.forEach(id=>{const q=P(id),c=on.has(id);if(q.conn&&!c){q.offAt=Date.now();warnOff(q)}q.conn=c});
   m.players.forEach(x=>{if(on.has(x.id))sendTo(x.id,stateFor(x.id))});
   fixTurn();saveLive();renderPlayers();renderLobby();return;
  }
@@ -1367,7 +1412,7 @@ function onServer(m){
   return;
  }
  if(m.t==='leave'){
-  const p=P(m.id);if(p)p.conn=false;
+  const p=P(m.id);if(p){if(p.conn){p.offAt=Date.now();warnOff(p)}p.conn=false}
   if(live.turn===m.id){advanceTurn();broadcastTurn()}
   checkAllAnswered();saveLive();renderPlayers();renderLobby();return;
  }
@@ -1423,8 +1468,10 @@ function advanceTurn(){
 function fixTurn(){if(live.phase==='play'&&(!live.turn||!P(live.turn)||!P(live.turn).conn))advanceTurn()}
 
 /* --- rondes --- */
+let resFn=null,resT=0;const RV_LAST=3000;
+function flushRes(){clearTimeout(resT);if(resFn){const f=resFn;resFn=null;f()}}
 function liveSpinStart(){
- clearTimeout(autoT);hideRV();
+ clearTimeout(autoT);flushRes();hideRV();
  live.spinner=live.turn;
  live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.inRound=false});
  sendAll({k:'spin',by:live.spinner,name:(P(live.spinner)||{}).name});
@@ -1437,11 +1484,14 @@ function liveRoundStart(){
  sendAll({k:'round',n:state.drawn.length,cat:needCat(),ask:c.ask,color:c.color});
  advanceTurn();broadcastTurn();saveLive();renderPlayers();
 }
+const holdsRound=p=>p.inRound&&!p.sub&&p.pick!=null&&!p.conn&&Date.now()-(p.offAt||0)<20000;
+function warnOff(p){if(roundOpen()&&p.inRound&&p.pick!=null&&!p.sub)say('⚠️ '+p.name+' is offline met een gekozen vakje')}
 function checkAllAnswered(){
  clearTimeout(autoT);
  if(!live.auto||!roundOpen())return;
- const act=live.order.map(P).filter(p=>p&&p.conn&&p.inRound);
- if(act.length&&act.every(p=>p.sub)){say('Alle antwoorden binnen!');showAllIn(act);autoT=setTimeout(()=>{if(roundOpen())reveal(true)},2300)}
+ const act=live.order.map(P).filter(p=>p&&p.inRound&&(p.conn||holdsRound(p)));
+ const held=act.filter(p=>!p.conn);if(held.length)autoT=setTimeout(checkAllAnswered,20500-Math.min(...held.map(p=>Date.now()-(p.offAt||0))));
+ if(act.length&&act.every(p=>p.sub)){clearTimeout(autoT);say('Alle antwoorden binnen!');showAllIn(act);autoT=setTimeout(()=>{if(roundOpen())reveal(true)},2300)}
 }
 /* --- beoordelen --- */
 function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let prev=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=cur}return prev[n]}
@@ -1481,10 +1531,11 @@ function judgeAll(){
   const p=P(id);if(!p)return;
   if(LINES.some(l=>l.every(j=>p.card[j].ok))&&!live.won.includes(id)){live.won.push(id);fresh.push(p.name)}
  });
- live.order.forEach(id=>{const p=P(id);if(p.conn)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id)})});
+ resFn=()=>live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.res)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id)})});
+ clearTimeout(resT);resT=setTimeout(flushRes,RV_LAST+400);
  broadcastTurn();saveLive();renderPlayers();
- if(fresh.length)setTimeout(()=>celebrate(fresh.join(' & ')),900);
- else if(live.order.some(id=>P(id).res&&P(id).res.ok))setTimeout(()=>confetti(innerWidth*.75,innerHeight*.5,40,.9),700);
+ if(fresh.length)setTimeout(()=>celebrate(fresh.join(' & ')),RV_LAST+1500);
+ else if(live.order.some(id=>P(id).res&&P(id).res.ok))setTimeout(()=>confetti(innerWidth*.5,innerHeight*.55,70,1.1),RV_LAST+200);
 }
 /* --- spel starten / opnieuw --- */
 function startGame(){
@@ -1506,7 +1557,7 @@ $('#auto').onchange=e=>{live.auto=e.target.checked;saveLive();checkAllAnswered()
 
 /* --- spelerslijst op de tv --- */
 function statusOf(id,p){
- if(!p.conn)return['off','Offline'];
+ if(!p.conn){if(roundOpen()&&p.inRound&&p.pick!=null&&!p.sub)return['warn','⚠️ Offline · vakje al gekozen'];return['off','Offline']}
  if(live.phase==='lobby')return['ok','Klaar ✓'];
  if(live.won.includes(id)&&!roundOpen())return['win','🎉 BINGO!'];
  if(spinning)return live.spinner===id?['spin','Draait aan het rad 🎡']:['idle','Kijkt naar het rad'];
@@ -1568,9 +1619,10 @@ function renderLobby(){
  const el=$('#lobby'),show=live.phase==='lobby'||joinOpen;
  el.classList.toggle('on',show);
  if(!show)return;
- const url=lanUrls[urlIdx]||'';
+ const url=lanUrls[urlIdx]||'',qurl=url+(roomCode?(url.includes('?')?'&':'?')+'c='+roomCode:'');
  $('#lobUrl').textContent=url.replace(/^https?:\/\//,'');
- if(url&&window.QR){try{QR.draw($('#qr'),url,{size:Math.min(innerHeight*.55,520),dark:'#150a28',light:'#ffffff',quiet:2})}catch(e){}}
+ $('#lobCode').textContent=roomCode||'····';
+ if(url&&window.QR){try{QR.draw($('#qr'),qurl,{size:Math.min(innerHeight*.55,520),dark:'#150a28',light:'#ffffff',quiet:2})}catch(e){}}
  $('#lobAlt').innerHTML=lanUrls.length>1?'Werkt het niet? Probeer: '+lanUrls.map((u,i)=>`<button data-i="${i}" class="${i===urlIdx?'on':''}">${esc(u.replace('http://','').replace('/play',''))}</button>`).join(''):'';
  const ids=live.order.filter(id=>P(id));
  $('#lobPl').innerHTML=ids.length?ids.map(id=>{const p=P(id);return `<span class="chip ${p.conn?'':'off'}" style="--pc:${PCOL[p.idx%25]}"><span class="av">${AV[p.idx%25]}</span>${esc(p.name)}</span>`}).join(''):'<span class="mut">Wachten op de eerste speler…</span>';
@@ -1605,26 +1657,43 @@ function rbarHtml(){
  if(!roundOpen()||live.phase!=='play')return'';
  const act=live.order.map(P).filter(p=>p&&p.conn&&p.inRound);if(!act.length)return'';
  const done=act.filter(p=>p.sub).length,w=act.length-done,el=Math.floor((Date.now()-(live.roundAt||Date.now()))/1000),c=catOf(needCat());
- return `<div class="rbar"><div class="rb-t"><b>${done}/${act.length}</b> antwoorden binnen<span>${c?c.color+': '+c.ask:''}</span></div><div class="rb-p"><i style="width:${done/act.length*100}%"></i></div>${w&&el>=25?'<button class="rb-f" onclick="reveal(true)">Toch onthullen</button>':''}</div>`;
+ const off=act.filter(p=>!p.conn).map(p=>p.name);
+ return `<div class="rbar"><div class="rb-t"><b>${done}/${act.length}</b> antwoorden binnen<span>${c?c.color+': '+c.ask:''}</span>${off.length?`<span class="rb-w">⚠️ ${esc(off.join(', '))} is offline met een gekozen vakje</span>`:''}</div><div class="rb-p"><i style="width:${done/act.length*100}%"></i></div>${w&&el>=25?'<button class="rb-f" onclick="reveal(true)">Toch onthullen</button>':''}</div>`;
 }
 /* --- fullscreen onthulling --- */
 let rvT=0;
-function hideRV(){clearTimeout(rvT);const r=$('#rv');if(r)r.className=''}
+function hideRV(){clearTimeout(rvT);clearTimeout(boomT);const r=$('#rv');if(r)r.className=''}
 function showAllIn(act){
  const r=$('#rv');clearTimeout(rvT);r.className='on allin';
  r.innerHTML=`<div class="ai"><div class="ai-ring"></div><div class="ai-t">Iedereen heeft geantwoord!</div><div class="ai-av">${act.map(p=>`<span>${AV[p.idx%25]}</span>`).join('')}</div><div class="ai-s">Het nummer wordt onthuld…</div></div>`;
 }
+function boom(){
+ try{if(typeof muted!=='undefined'&&muted)return;const A=window.AudioContext||window.webkitAudioContext,ac=new A(),t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();
+  o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(38,t+.6);g.gain.setValueAtTime(.7*Math.max(.3,typeof vol==='number'?vol:1),t);g.gain.exponentialRampToValueAtTime(.001,t+.7);
+  o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.75);setTimeout(()=>ac.close(),1200)}catch(e){}
+}
+let boomT=0;
 function showRV(){
- const s=curSong(),r=$('#rv');if(!s||!r)return;clearTimeout(rvT);
- const ct=catOf(needCat());
+ const s=curSong(),r=$('#rv');if(!s||!r)return;clearTimeout(rvT);clearTimeout(boomT);
+ const ct=catOf(needCat()),cat=needCat();
+ const last=cat==='title'?'title':cat==='artist'?'artist':'year';
+ const order=['title','artist','year'].filter(k=>k!==last);
+ const body={title:esc(s.title),artist:esc(s.artist),year:esc(s.year)};
+ const cell=k=>{
+  const isLast=k===last,d=isLast?RV_LAST/1000:.5+order.indexOf(k)*.9;
+  return `<div class="rv-it rv-${k} ${isLast?'last':''}" style="--d:${d}s"><div class="rv-c">${body[k]}</div>${isLast?'<div class="rv-q">? ? ?</div>':''}</div>`;
+ };
  const rows=live.order.map(P).filter(p=>p&&p.res).sort((a,b)=>(b.res.ok-a.res.ok)||a.idx-b.idx).map((p,i)=>`<div class="rv-p ${p.res.ok?'good':'bad'}" style="--pc:${PCOL[p.idx%25]};--i:${i}"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><em>${p.res.none?'geen antwoord':'“'+esc(p.res.ans)+'”'}</em><i>${p.res.ok?'✓':'✗'}</i></div>`).join('');
  const art=curInfo&&curInfo.art?`<img class="rv-art" src="${esc(curInfo.art)}">`:'<div class="rv-art rv-no">🎵</div>';
  r.className='on show';
- r.innerHTML=`<div class="rv-in"><div class="rv-top">${art}<div class="rv-m">${ct?`<div class="rv-cat" style="background:${ct.bg};color:${ct.fg}">${ct.color}: ${ct.ask}</div>`:''}<div class="rv-title">${esc(s.title)}</div><div class="rv-artist">${esc(s.artist)}</div><div class="rv-year">${esc(s.year)}</div></div></div><div class="rv-pl n${Math.min(rows.split('rv-p ').length-1,25)}">${rows}</div><div class="rv-hint">Spatie of klik voor de volgende draai<i></i></div></div>`;
- rvT=setTimeout(hideRV,15000);
+ r.innerHTML=`<div class="rv-flash"></div><div class="rv-in"><div class="rv-top">${art}<div class="rv-m">${ct?`<div class="rv-cat" style="background:${ct.bg};color:${ct.fg}">${ct.color}: ${ct.ask}</div>`:''}${cell('title')}${cell('artist')}${cell('year')}</div></div><div class="rv-pl n${Math.min(rows.split('rv-p ').length-1,25)}">${rows}</div><div class="rv-hint">Spatie of klik voor de volgende draai<i></i></div></div>`;
+ boomT=setTimeout(boom,RV_LAST);
+ rvT=setTimeout(hideRV,22000);
 }
 document.addEventListener('click',e=>{const r=$('#rv');if(r&&r.classList.contains('show')&&r.contains(e.target))hideRV()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')hideRV()});
+
+$('#lobFs').onclick=()=>$('#fs').click();
 /* ---------- mediaspeler + fade (ease in / ease out) ---------- */
 let vol=LS.get('tv_vol',0.8),muted=false,fadeSec=LS.get('tv_fade',3),duck=1;
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}; // smoothstep

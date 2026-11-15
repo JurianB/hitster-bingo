@@ -1,6 +1,8 @@
 /* Hitster Live – lokale server (geen dependencies nodig). Start met: node server.js */
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto');
 const PORT=+process.env.PORT||3000,PUB=path.join(__dirname,'public'),MAXP=+process.env.MAX_PLAYERS||25,TV_KEY=process.env.TV_KEY||'';
+const ROOM=(process.env.ROOM_CODE||Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[crypto.randomInt(24)]).join('')).toUpperCase();
+const fails=new Map();   // ip -> {n,t}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};
 
 /* ---------- netwerkadres voor de QR-code ---------- */
@@ -81,7 +83,7 @@ server.on('upgrade',(req,sock)=>{
  if(role==='tv'&&TV_KEY&&u.searchParams.get('key')!==TV_KEY){sock.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');sock.destroy();return}
  const acc=crypto.createHash('sha1').update(req.headers['sec-websocket-key']+GUID).digest('base64');
  sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
- attach(new WS(sock),role);
+ attach(new WS(sock),role,req.socket.remoteAddress);
 });
 
 /* ---------- spelkamer: server is alleen post (de tv beslist) ---------- */
@@ -89,10 +91,10 @@ let tv=null;                       // WS van het tv-scherm
 const players=new Map();           // id -> {ws,name,connected}
 const roster=()=>[...players].map(([id,p])=>({id,name:p.name,connected:p.connected}));
 const toTV=o=>tv&&tv.send(o);
-function attach(ws,role){
+function attach(ws,role,ip){
  if(role==='tv'){
   if(tv&&tv!==ws){tv.send({t:'replaced'});tv.close()}
-  tv=ws;ws.send({t:'roster',players:roster()});
+  tv=ws;ws.send({t:'room',code:ROOM});ws.send({t:'roster',players:roster()});
   for(const p of players.values())p.connected&&p.ws.send({t:'tv',on:true});
   ws.onclose=()=>{if(tv===ws){tv=null;for(const p of players.values())p.connected&&p.ws.send({t:'tv',on:false})}};
   ws.onmessage=m=>{
@@ -109,6 +111,9 @@ function attach(ws,role){
  ws.onmessage=m=>{
   let o;try{o=JSON.parse(m)}catch{return}
   if(o.t==='hello'){
+   const f=fails.get(ip)||{n:0,t:Date.now()};if(Date.now()-f.t>600000){f.n=0;f.t=Date.now()}
+   if(f.n>=8){ws.send({t:'badcode',locked:true});return ws.close()}
+   if(String(o.code||'').trim().toUpperCase()!==ROOM){f.n++;fails.set(ip,f);ws.send({t:'badcode'});return ws.close()}
    id=String(o.id||'').slice(0,40)||crypto.randomUUID();
    const name=String(o.name||'Speler').slice(0,16)||'Speler';
    const old=players.get(id);
@@ -132,6 +137,7 @@ setInterval(()=>{
 server.listen(PORT,'0.0.0.0',()=>{
  const ips=lanIPs();
  console.log('\n  🎵  HITSTER LIVE draait\n');
+ console.log('  Roomcode:              '+ROOM+'  (staat ook op de tv)');
  console.log('  Tv (open op deze pc):  http://localhost:'+PORT+'/');
  console.log('  Telefoons joinen via:  '+(ips[0]?'http://'+ips[0].ip+':'+PORT+'/play':'(geen netwerk gevonden)'));
  if(ips.length>1)console.log('  Andere adressen:       '+ips.slice(1).map(i=>i.ip+' ('+i.name+')').join(', '));
