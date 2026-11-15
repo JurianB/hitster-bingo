@@ -659,6 +659,40 @@ nav .pill{margin-left:.2rem}
 .rv-p{animation:chipin .6s calc(3.9s + var(--i)*.12s) cubic-bezier(.2,1.6,.4,1) both}
 .rv-hint{opacity:0;animation:rise .6s 4.6s both}
 .rv-hint i{animation:rvbar 18s 4.6s linear forwards}
+
+/* ===== v5: twee kolommen goed/fout + afteltimer ===== */
+#grace{position:fixed;bottom:6.5rem;left:50%;transform:translateX(-50%);z-index:45;display:none;align-items:center;gap:1rem;background:#2a0d18f0;border:.2rem solid #ff5a6e;border-radius:3rem;padding:.4rem 1.6rem .4rem .5rem;box-shadow:0 .6rem 2rem #000a;pointer-events:none}
+#grace.on{display:flex;animation:grIn .4s cubic-bezier(.2,1.5,.4,1)}
+@keyframes grIn{from{opacity:0;transform:translate(-50%,1.5rem) scale(.8)}}
+.gr-n{width:3.6rem;height:3.6rem;border-radius:50%;background:#ff5a6e;color:#fff;font-weight:900;font-size:2.2rem;display:grid;place-items:center;animation:grTick 1s ease-out infinite}
+@keyframes grTick{0%{transform:scale(1.25)}60%{transform:scale(1)}}
+.gr-t{font-weight:800;font-size:1.15rem}
+.rv-art{width:min(30vh,24rem);height:min(30vh,24rem)}
+.rv-cols{display:grid;grid-template-columns:1fr 1fr;gap:min(2vw,1.6rem);width:100%;min-height:0}
+.rv-col{background:#ffffff0b;border:.14rem solid #ffffff1c;border-radius:1.2rem;padding:.7rem .8rem;display:flex;flex-direction:column;gap:.6rem;min-width:0;min-height:0;opacity:0;animation:rise .6s both}
+.rv-col.good{border-color:#38d27a88;background:#38d27a12;animation-delay:3.8s}
+.rv-col.bad{border-color:#ff6b7b77;background:#ff6b7b10;animation-delay:4.2s}
+.rv-ch{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:min(2rem,3.4vh);letter-spacing:.02em}
+.rv-col.good .rv-ch{color:#6df0a2}.rv-col.bad .rv-ch{color:#ff8a98}
+.rv-ch b{min-width:2.4rem;height:2.4rem;border-radius:1.2rem;display:grid;place-items:center;padding:0 .5rem;font-size:1.3rem;color:#0d0517}
+.rv-col.good .rv-ch b{background:#6df0a2}.rv-col.bad .rv-ch b{background:#ff8a98}
+.rv-list{display:grid;grid-template-columns:1fr;gap:.5rem;overflow:hidden;align-content:start;max-height:min(30vh,22rem)}
+.rv-col.s3 .rv-list{grid-template-columns:1fr 1fr;gap:.35rem}
+.rv-col.s3 .rv-p em{display:none}
+.rv-col.s1 .rv-p{padding:.6rem 1rem}.rv-col.s1 .rv-p .av{font-size:2.2rem}.rv-col.s1 .rv-p b{font-size:1.5rem}.rv-col.s1 .rv-p em{font-size:1.15rem}.rv-col.s1 .rv-p i{font-size:2.2rem}
+.rv-col.s3 .rv-p{padding:.3rem .5rem}.rv-col.s3 .rv-p .av{font-size:1.2rem}.rv-col.s3 .rv-p b{font-size:.95rem}.rv-col.s3 .rv-p i{font-size:1.3rem}
+.rv-none{padding:1rem;text-align:center;color:var(--mut);font-size:1.3rem;font-weight:800;animation:rise .6s 4.3s both}
+.rv-col.good .rv-p{animation:goodIn .75s calc(4s + var(--i)*.16s) cubic-bezier(.2,1.4,.3,1) both}
+.rv-col.bad .rv-p{animation:badIn .75s calc(4.4s + var(--i)*.16s) cubic-bezier(.2,1.2,.3,1) both}
+.rv-col .rv-p{border-color:transparent;border-left:.35rem solid var(--pc)}
+.rv-col.good .rv-p{background:#38d27a26}.rv-col.bad .rv-p{background:#ff6b7b1c;opacity:1}
+@keyframes goodIn{0%{opacity:0;transform:translateX(-3.5rem) scale(.85)}60%{opacity:1;transform:translateX(.5rem) scale(1.04)}100%{opacity:1;transform:none}}
+@keyframes badIn{0%{opacity:0;transform:translateX(3.5rem) scale(.9)}50%{opacity:1;transform:translateX(-.5rem)}65%{transform:translateX(.4rem)}80%{transform:translateX(-.25rem)}100%{opacity:1;transform:none}}
+.rv-col.good .rv-p i{animation:tickPop .6s calc(4.35s + var(--i)*.16s) cubic-bezier(.2,2,.4,1) both}
+.rv-col.bad .rv-p i{animation:crossPop .5s calc(4.75s + var(--i)*.16s) ease-out both}
+@keyframes tickPop{from{opacity:0;transform:scale(0) rotate(-40deg)}to{opacity:1;transform:none}}
+@keyframes crossPop{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
+.rv-hint{animation-delay:5.2s}.rv-hint i{animation-delay:5.2s}
 </style>
 </head>
 <body>
@@ -732,6 +766,7 @@ nav .pill{margin-left:.2rem}
  </div>
 </div>
 <div id="rv"></div>
+<div id="grace"></div>
 <canvas id="fx"></canvas>
 <div id="winner"></div>
 
@@ -1471,7 +1506,7 @@ function fixTurn(){if(live.phase==='play'&&(!live.turn||!P(live.turn)||!P(live.t
 let resFn=null,resT=0;const RV_LAST=3000;
 function flushRes(){clearTimeout(resT);if(resFn){const f=resFn;resFn=null;f()}}
 function liveSpinStart(){
- clearTimeout(autoT);flushRes();hideRV();
+ cancelGrace();clearTimeout(autoT);flushRes();hideRV();
  live.spinner=live.turn;
  live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.inRound=false});
  sendAll({k:'spin',by:live.spinner,name:(P(live.spinner)||{}).name});
@@ -1674,7 +1709,7 @@ function boom(){
 }
 let boomT=0;
 function showRV(){
- const s=curSong(),r=$('#rv');if(!s||!r)return;clearTimeout(rvT);clearTimeout(boomT);
+ const s=curSong(),r=$('#rv');if(!s||!r)return;clearTimeout(graceT);live.graceAt=0;renderGrace();clearTimeout(rvT);clearTimeout(boomT);
  const ct=catOf(needCat()),cat=needCat();
  const last=cat==='title'?'title':cat==='artist'?'artist':'year';
  const order=['title','artist','year'].filter(k=>k!==last);
@@ -1683,10 +1718,15 @@ function showRV(){
   const isLast=k===last,d=isLast?RV_LAST/1000:.5+order.indexOf(k)*.9;
   return `<div class="rv-it rv-${k} ${isLast?'last':''}" style="--d:${d}s"><div class="rv-c">${body[k]}</div>${isLast?'<div class="rv-q">? ? ?</div>':''}</div>`;
  };
- const rows=live.order.map(P).filter(p=>p&&p.res).sort((a,b)=>(b.res.ok-a.res.ok)||a.idx-b.idx).map((p,i)=>`<div class="rv-p ${p.res.ok?'good':'bad'}" style="--pc:${PCOL[p.idx%25]};--i:${i}"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><em>${p.res.none?'geen antwoord':'“'+esc(p.res.ans)+'”'}</em><i>${p.res.ok?'✓':'✗'}</i></div>`).join('');
+ const pl=live.order.map(P).filter(p=>p&&p.res),byIdx=(x,y)=>x.idx-y.idx;
+ const good=pl.filter(p=>p.res.ok).sort(byIdx),bad=pl.filter(p=>!p.res.ok).sort(byIdx);
+ const sz=Math.max(good.length,bad.length)<=4?'s1':pl.length<=16?'s2':'s3';
+ const mk=(p,i)=>`<div class="rv-p ${p.res.ok?'good':'bad'}" style="--pc:${PCOL[p.idx%25]};--i:${i}"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><em>${p.res.none?'geen antwoord':'“'+esc(p.res.ans)+'”'}</em><i>${p.res.ok?'✓':'✗'}</i></div>`;
+ const col=(k,list,title,empty)=>`<div class="rv-col ${k} ${sz}"><div class="rv-ch"><span>${title}</span><b>${list.length}</b></div><div class="rv-list">${list.length?list.map(mk).join(''):`<div class="rv-none">${empty}</div>`}</div></div>`;
+ const rows=`<div class="rv-cols">${col('good',good,'✓ Goed',pl.length?'Niemand… 😬':'')}${col('bad',bad,'✗ Fout',pl.length?'Iedereen goed! 🎉':'')}</div>`;
  const art=curInfo&&curInfo.art?`<img class="rv-art" src="${esc(curInfo.art)}">`:'<div class="rv-art rv-no">🎵</div>';
  r.className='on show';
- r.innerHTML=`<div class="rv-flash"></div><div class="rv-in"><div class="rv-top">${art}<div class="rv-m">${ct?`<div class="rv-cat" style="background:${ct.bg};color:${ct.fg}">${ct.color}: ${ct.ask}</div>`:''}${cell('title')}${cell('artist')}${cell('year')}</div></div><div class="rv-pl n${Math.min(rows.split('rv-p ').length-1,25)}">${rows}</div><div class="rv-hint">Spatie of klik voor de volgende draai<i></i></div></div>`;
+ r.innerHTML=`<div class="rv-flash"></div><div class="rv-in"><div class="rv-top">${art}<div class="rv-m">${ct?`<div class="rv-cat" style="background:${ct.bg};color:${ct.fg}">${ct.color}: ${ct.ask}</div>`:''}${cell('title')}${cell('artist')}${cell('year')}</div></div>${rows}<div class="rv-hint">Spatie of klik voor de volgende draai<i></i></div></div>`;
  boomT=setTimeout(boom,RV_LAST);
  rvT=setTimeout(hideRV,22000);
 }
@@ -1694,6 +1734,23 @@ document.addEventListener('click',e=>{const r=$('#rv');if(r&&r.classList.contain
 document.addEventListener('keydown',e=>{if(e.key==='Escape')hideRV()});
 
 $('#lobFs').onclick=()=>$('#fs').click();
+
+/* --- nummer afgelopen: nog 5 seconden, dan is de beurt voorbij --- */
+let graceT=0;
+function renderGrace(){
+ const g=$('#grace');if(!g)return;const left=(live.graceAt||0)-Date.now();
+ if(left>0&&roundOpen()){g.className='on';g.innerHTML=`<div class="gr-n">${Math.ceil(left/1000)}</div><div class="gr-t">Nummer afgelopen · laatste kans om te antwoorden</div>`}
+ else g.className='';
+}
+setInterval(renderGrace,200);
+function startGrace(){
+ if(live.phase!=='play'||!roundOpen()||(live.graceAt||0)>Date.now())return;
+ clearTimeout(graceT);live.graceAt=Date.now()+5000;sendAll({k:'grace',sec:5});renderGrace();
+ graceT=setTimeout(()=>{live.graceAt=0;renderGrace();if(roundOpen())reveal(true)},5000);
+}
+function cancelGrace(){clearTimeout(graceT);if(live.graceAt){live.graceAt=0;sendAll({k:'grace',sec:0})}renderGrace()}
+audio.addEventListener('ended',startGrace);
+audio.addEventListener('play',cancelGrace);
 /* ---------- mediaspeler + fade (ease in / ease out) ---------- */
 let vol=LS.get('tv_vol',0.8),muted=false,fadeSec=LS.get('tv_fade',3),duck=1;
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}; // smoothstep

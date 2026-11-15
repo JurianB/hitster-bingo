@@ -165,13 +165,14 @@ function on(m){
   case 'phase':if(S)S.phase=d.phase;break;
   case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};sentSpin=false;break;
   case 'anim':wheelAnim(d);break;
+  case 'grace':graceUntil=d.sec?Date.now()+d.sec*1000:0;lastGs=-1;banner();break;
   case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';sentSpin=false;buzz(30);wheelKick();break;
   case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';sentSpin=false;buzz([60,40,60]);wheelLand(d.cat);break;
   case 'picked':if(S&&S.round){S.round.pick=d.i}break;
   case 'nopick':toast('Dat vakje kan nu niet');break;
   case 'answered':if(S&&S.round){S.round.sub=true;S.round.ans=d.v}buzz(40);break;
   case 'editing':if(S&&S.round)S.round.sub=false;break;
-  case 'result':if(S){if(d.won&&!S.won)bingoConfetti();S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
+  case 'result':graceUntil=0;if(S){if(d.won&&!S.won)bingoConfetti();S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
  }
  draw();
 }
@@ -191,6 +192,7 @@ function banner(){
    const c=CAT[r.cat];cls='cat-'+r.cat;
    if(!r.inRound){t='Je doet mee vanaf de volgende ronde';cls=''}
    else if(r.sub){t=`${c.c}: antwoord verstuurd ✓`;s='Wachten op de onthulling…'}
+   else if(graceUntil>Date.now()){cls='bad';t=`⏱ Nog ${Math.ceil((graceUntil-Date.now())/1000)}s!`;s=r.pick==null?'Het nummer is afgelopen. Kies snel een vakje en antwoord!':'Het nummer is afgelopen. Stuur nu je antwoord in!'}
    else if(r.pick==null){t=`${c.c}: noem ${c.t}`;s=`Tik een ${c.c.toLowerCase()} vakje op je kaart`}
    else{t=`${c.c}: noem ${c.t}`;s='Vul je antwoord hieronder in'}
   }else if(r.s==='revealed'){
@@ -282,7 +284,8 @@ $('#card').addEventListener('click',e=>{
 /* ---------- rad: swipe om te draaien ---------- */
 const WS=[{t:'title',c:'#38d27a',l:'Titel'},{t:'year',c:'#ff7ab8',l:'Jaar'},{t:'artist',c:'#ffd23f',l:'Artiest'},{t:'decade',c:'#9b5de5',l:'Decennium'},{t:'near',c:'#3fa0ff',l:'± 3 jaar'}];
 const WI=Object.fromEntries(WS.map((x,i)=>[x.t,i]));
-let sentSpin=false,wasCan=false,animSeen=false;
+let sentSpin=false,wasCan=false,animSeen=false,graceUntil=0,lastGs=-1;
+setInterval(()=>{if(graceUntil&&S&&S.round&&S.round.s==='open'){const g=Math.ceil((graceUntil-Date.now())/1000);if(g!==lastGs){lastGs=g;if(g>0&&!S.round.sub)buzz(25);banner()}if(g<=0)graceUntil=0}},200);
 let rot=0,vel=0,drag=false,easing=null,raf=0,lastT=0,lastSeg=-1;
 const pw=$('#pw'),pwrap=$('#pwrap');
 (function paint(){
