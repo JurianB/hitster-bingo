@@ -502,6 +502,67 @@ nav .pill{margin-left:.2rem}
 #lobStart{width:100%}#lobStart:disabled{opacity:.45;cursor:default}
 .lob-sub{margin-top:.6rem;text-align:center}
 @media (max-width:900px){.lob-card{grid-template-columns:1fr}}
+
+/* focus-animaties */
+@media (min-width:901px){
+#spelen .play{transition:grid-template-columns .8s cubic-bezier(.2,.8,.2,1)}
+#spelen[data-f=wheel] .play{grid-template-columns:minmax(0,1.8fr) minmax(0,.7fr) minmax(0,.65fr)}
+#spelen[data-f=answer] .play{grid-template-columns:minmax(0,.5fr) minmax(0,.85fr) minmax(0,1.9fr)}
+#spelen .wheelwrap,#spelen .players,#spelen .play>div:nth-child(2){transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .6s,filter .6s}
+#spelen[data-f=wheel] .players,#spelen[data-f=wheel] .play>div:nth-child(2){opacity:.45;filter:blur(1.5px) saturate(.7)}
+#spelen[data-f=wheel] .wheelwrap{transform:scale(1.04);filter:drop-shadow(0 0 3rem #ff3d8b66)}
+#spelen[data-f=answer] .wheelwrap{transform:scale(.82);opacity:.5;filter:saturate(.6)}
+#spelen[data-f=answer] .play>div:nth-child(2){opacity:.9}
+#spelen[data-f=answer] .players{animation:popin .7s cubic-bezier(.2,1.2,.3,1)}
+#spelen[data-f=answer] .players.c1 .pl-s,#spelen[data-f=answer] .players.c2 .pl-s{font-size:1.45rem}
+#spelen[data-f=answer] .players.c1 .pl-t b,#spelen[data-f=answer] .players.c2 .pl-t b{font-size:1.6rem}
+#spelen[data-f=answer] .players.c3 .pl-s{font-size:1.1rem}
+#spelen[data-f=answer] .players.c4 .pl-s{font-size:.88rem}
+#spelen[data-f=answer] .players.c1 .mini,#spelen[data-f=answer] .players.c2 .mini{width:6.5rem}
+}
+@keyframes popin{from{transform:scale(.94);opacity:.4}}
+.rbar{grid-column:1/-1;background:#ffffff10;border:.12rem solid #ffffff22;border-radius:1rem;padding:.6rem .9rem;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .9rem}
+.rb-t{font-size:1.2rem;font-weight:800;flex:1;min-width:0}.rb-t b{font-size:1.7rem;color:#6df0a2}.rb-t span{display:block;font-size:.9rem;color:var(--mut);font-weight:600}
+.rb-p{flex:0 0 100%;height:.55rem;background:#ffffff18;border-radius:1rem;overflow:hidden}.rb-p i{display:block;height:100%;background:linear-gradient(90deg,#38d27a,#6df0a2);transition:width .5s}
+.rb-f{padding:.3rem .8rem;font-size:.9rem}
+.steps{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
+.steps span{display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:800;padding:.1rem .5rem .1rem .15rem;border-radius:1rem;background:#ffffff0d;color:var(--mut)}
+.steps i{font-style:normal;width:1.1rem;height:1.1rem;border-radius:50%;display:grid;place-items:center;background:#ffffff1a;font-size:.7rem}
+.steps .d{color:#6df0a2;background:#38d27a22}.steps .d i{background:#38d27a;color:#04200e}
+.steps .a{color:#fff;background:#ffd23f33;animation:blink 1s steps(2) infinite}.steps .a i{background:#ffd23f;color:#3a2c00}
+.players.c4 .steps span{font-size:.6rem}.players.c4 .steps i{display:none}.players.c4 .steps span{padding-left:.4rem}
+.pl.s-done{border-color:#38d27a;box-shadow:0 0 1rem #38d27a44}
+#rv{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#3a1260f5,#0d0517fa 75%);backdrop-filter:blur(14px);cursor:pointer}
+#rv.on{display:flex;animation:rvin .45s cubic-bezier(.2,1,.3,1)}
+@keyframes rvin{from{opacity:0;transform:scale(1.08)}}
+.ai{text-align:center}
+.ai-t{font-size:min(7vw,11vh);font-weight:900;background:linear-gradient(90deg,#6df0a2,#7ee3ff,#6df0a2);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 1.2s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.ai-av{display:flex;justify-content:center;flex-wrap:wrap;gap:.4rem;font-size:min(5vw,8vh);margin:1.2rem 0}
+.ai-av span{animation:chipin .6s cubic-bezier(.2,1.6,.4,1) both}
+.ai-s{font-size:1.6rem;color:var(--mut)}
+.ai-ring{width:min(14vh,8rem);height:min(14vh,8rem);margin:0 auto 1.2rem;border-radius:50%;border:.7rem solid #6df0a233;border-top-color:#6df0a2;animation:spinr 1s linear infinite}
+@keyframes spinr{to{transform:rotate(360deg)}}
+.rv-in{width:min(94vw,110rem);height:min(94vh,60rem);display:flex;flex-direction:column;justify-content:center;gap:min(3vh,2rem);align-items:center}
+.rv-top{display:flex;align-items:center;gap:min(5vw,5rem);max-width:100%}
+.rv-art{width:min(38vh,30rem);height:min(38vh,30rem);border-radius:1.6rem;object-fit:cover;box-shadow:0 0 5rem #ff3d8b66,0 2rem 5rem #000a;animation:artin 1s cubic-bezier(.2,1.2,.3,1) both;flex:none}
+.rv-no{display:grid;place-items:center;font-size:8rem;background:#ffffff14}
+@keyframes artin{from{opacity:0;transform:scale(.4) rotate(-14deg)}}
+.rv-m{min-width:0;display:flex;flex-direction:column;gap:.5rem}
+.rv-cat{align-self:flex-start;font-weight:900;font-size:min(1.6rem,3vh);padding:.3rem 1.1rem;border-radius:2rem;animation:rise .6s both}
+.rv-title{font-size:min(5.2vw,9vh);font-weight:900;line-height:1.05;animation:rise .7s .35s both}
+.rv-artist{font-size:min(3vw,5.5vh);color:#d8cfe8;animation:rise .7s .6s both}
+.rv-year{font-size:min(11vw,20vh);font-weight:900;line-height:1;color:#ffd23f;text-shadow:0 0 3rem #ffd23f77;animation:slam .8s 1.5s cubic-bezier(.2,1.6,.3,1) both}
+@keyframes slam{from{opacity:0;transform:scale(2.4)}}
+.rv-pl{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.6rem;width:100%}
+.rv-p{display:flex;align-items:center;gap:.5rem;background:#ffffff12;border:.14rem solid var(--pc);border-radius:1rem;padding:.5rem .8rem;min-width:0;animation:chipin .6s calc(2.1s + var(--i)*.12s) cubic-bezier(.2,1.6,.4,1) both}
+.rv-p .av{font-size:1.6rem}.rv-p b{font-size:1.1rem}.rv-p em{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ddd;font-size:.95rem}.rv-p i{font-style:normal;font-weight:900;font-size:1.8rem}
+.rv-p.good{background:#38d27a2a}.rv-p.good i{color:#6df0a2}.rv-p.bad i{color:#ff8a8a}.rv-p.bad{opacity:.85}
+.rv-pl.n13,.rv-pl.n14,.rv-pl.n15,.rv-pl.n16,.rv-pl.n17,.rv-pl.n18,.rv-pl.n19,.rv-pl.n20,.rv-pl.n21,.rv-pl.n22,.rv-pl.n23,.rv-pl.n24,.rv-pl.n25{grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))}
+.rv-pl.n13 em,.rv-pl.n20 em,.rv-pl.n25 em{display:none}
+.rv-hint{color:var(--mut);font-size:1.1rem;position:relative;overflow:hidden}
+.rv-hint i{display:block;height:.25rem;margin-top:.4rem;background:var(--acc);animation:rvbar 15s linear forwards;transform-origin:left}
+@keyframes rvbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 </style>
 </head>
 <body>
@@ -572,6 +633,7 @@ nav .pill{margin-left:.2rem}
   </div>
  </div>
 </div>
+<div id="rv"></div>
 <canvas id="fx"></canvas>
 <div id="winner"></div>
 
@@ -1098,7 +1160,7 @@ async function spin(dir,force){
  state.drawn.push(key(s));state.cur=key(s);state.shown=false;(state.catOf=state.catOf||{})[key(s)]=CATS[i].type;saveState();liveRoundStart();
  await play();
 }
-function reveal(){if(state.cur&&!state.shown){clearTimeout(autoT);state.shown=true;saveState();judgeAll();render()}}
+function reveal(f){if(state.cur&&!state.shown){if(f!==true&&live.phase==='play'){const w=waitingFor();if(w.length){say('Wacht tot iedereen heeft geantwoord: '+w.map(p=>p.name).join(', '));return}}clearTimeout(autoT);state.shown=true;saveState();judgeAll();render();showRV()}}
 function gpSayMaybe(m){try{if(typeof gpSay==='function')gpSay(m)}catch(_){}}
 document.addEventListener('click',e=>{if(e.target.closest('.retry')){e.preventDefault();play()}});
 function togglePlay(){if(!audio.src)return;audio.paused?audio.play():audio.pause();render()}
@@ -1307,7 +1369,7 @@ function fixTurn(){if(live.phase==='play'&&(!live.turn||!P(live.turn)||!P(live.t
 
 /* --- rondes --- */
 function liveSpinStart(){
- clearTimeout(autoT);
+ clearTimeout(autoT);hideRV();
  live.spinner=live.turn;
  live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.inRound=false});
  sendAll({k:'spin',by:live.spinner,name:(P(live.spinner)||{}).name});
@@ -1315,6 +1377,7 @@ function liveSpinStart(){
 }
 function liveRoundStart(){
  live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.typing=0;p.inRound=p.conn});
+ live.roundAt=Date.now();
  const c=catOf(needCat());
  sendAll({k:'round',n:state.drawn.length,cat:needCat(),ask:c.ask,color:c.color});
  advanceTurn();broadcastTurn();saveLive();renderPlayers();
@@ -1323,7 +1386,7 @@ function checkAllAnswered(){
  clearTimeout(autoT);
  if(!live.auto||!roundOpen())return;
  const act=live.order.map(P).filter(p=>p&&p.conn&&p.inRound);
- if(act.length&&act.every(p=>p.sub)){say('Alle antwoorden binnen!');autoT=setTimeout(()=>{if(roundOpen())reveal()},2200)}
+ if(act.length&&act.every(p=>p.sub)){say('Alle antwoorden binnen!');showAllIn(act);autoT=setTimeout(()=>{if(roundOpen())reveal(true)},2300)}
 }
 /* --- beoordelen --- */
 function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let prev=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=cur}return prev[n]}
@@ -1395,10 +1458,11 @@ function statusOf(id,p){
  if(!state.cur)return live.turn===id?['turn','🎡 Aan de beurt om te draaien!']:['idle','Wacht op de beurt van '+((P(live.turn)||{}).name||'…')];
  if(!state.shown){
   if(!p.inRound)return['idle','Doet mee vanaf de volgende ronde'];
-  if(p.sub)return['done','Antwoord ingestuurd ✓'];
-  if(p.pick==null)return['think','Kiest een vakje…'];
-  if(Date.now()-p.typing<3500)return['type','✍️ Typt een antwoord…'];
-  return['think','Vakje gekozen, bedenkt antwoord…'];
+  const k=STEP[needCat()]||STEP.title;
+  if(p.sub)return['done','✅ Antwoord ingestuurd'];
+  if(p.pick==null)return['think','🔍 Kiest een vakje…'];
+  if(k.type&&Date.now()-p.typing<3500)return['type','✍️ Typt '+k.n+'…'];
+  return['think',(k.type?'✍️ ':'🤔 ')+k.v];
  }
  if(p.res)return p.res.ok?['good','✓ Goed!']:p.res.none?['bad','Geen antwoord']:['bad','✗ Helaas'];
  return live.turn===id?['turn','🎡 Aan de beurt om te draaien!']:['idle','…'];
@@ -1409,14 +1473,15 @@ function renderPlayers(){if(rpQ)return;rpQ=requestAnimationFrame(()=>{rpQ=0;draw
 function drawPlayers(){
  const box=$('#players'),ids=live.order.filter(id=>P(id)),n=ids.length;
  box.className='players c'+(n<=3?1:n<=8?2:n<=15?3:4);
- updatePills();
+ updatePills();applyFocus();
  if(!n){box.innerHTML='<div class="pl-empty">Nog geen spelers.<br><small>Scan de QR-code — druk op <kbd>J</kbd></small></div>';return}
- box.innerHTML=ids.map(id=>{
+ box.innerHTML=rbarHtml()+ids.map(id=>{
   const p=P(id),[cls,txt]=statusOf(id,p),ok=p.card.filter(c=>c.ok).length;
   const ans=state.shown&&p.res&&p.res.ans?`<div class="pl-a">“${esc(p.res.ans)}”</div>`:'';
   const mini=p.card.map((c,i)=>`<i class="m ${TYPES_CLS[c.type]} ${c.ok?'ok':''} ${(roundOpen()&&p.pick===i)?'pk':''}"></i>`).join('');
   return `<div class="pl s-${cls} ${live.turn===id&&live.phase==='play'?'isturn':''}" style="--pc:${PCOL[p.idx%25]}" data-id="${id}">
    <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><span class="pl-n" title="vakjes goed · beste rij">✓${ok}</span><button class="kick" title="Verwijderen">✕</button></div>
+   ${roundOpen()&&p.inRound&&p.conn?stepsHtml(p):''}
    <div class="pl-b"><div class="pl-txt"><div class="pl-s">${txt}</div>${ans}<div class="pl-l">beste rij ${lineBest(p.card)}/5</div></div><div class="mini">${mini}</div></div>
   </div>`}).join('');
 }
@@ -1465,6 +1530,48 @@ $('#lobStart').onclick=()=>{if(live.phase==='lobby')startGame();else{joinOpen=fa
 $('#lobAlt').onclick=e=>{const b=e.target.closest('button');if(b){urlIdx=+b.dataset.i;renderLobby()}};
 $('#joinbtn').onclick=()=>{joinOpen=!joinOpen;renderLobby()};
 
+
+/* --- focus: rad groot tijdens draaien, spelers groot tijdens antwoorden --- */
+const STEP={
+ title:{w:'Titel',n:'de titel',v:'Vakje gekozen · bedenkt de titel',type:1},
+ year:{w:'Jaartal',n:'het jaartal',v:'Vakje gekozen · vult het jaartal in',type:1},
+ artist:{w:'Artiest',n:'de artiest',v:'Vakje gekozen · bedenkt de artiest',type:1},
+ decade:{w:'Decennium',n:'',v:'Vakje gekozen · kiest een decennium',type:0},
+ near:{w:'Jaartal',n:'het jaartal',v:'Vakje gekozen · vult het jaartal in',type:1}};
+function applyFocus(){
+ const f=live.phase!=='play'?'idle':spinning?'wheel':roundOpen()?'answer':'idle',s=$('#spelen');
+ if(s&&s.dataset.f!==f)s.dataset.f=f;
+}
+setInterval(applyFocus,250);
+function stepsHtml(p){
+ const k=STEP[needCat()]||STEP.title,st=p.sub?3:p.pick==null?0:1;
+ return '<div class="steps">'+['Vakje',k.w,'Klaar'].map((l,i)=>`<span class="${i<st?'d':i===st?'a':''}"><i>${i<st?'✓':i+1}</i>${l}</span>`).join('')+'</div>';
+}
+const waitingFor=()=>live.order.map(P).filter(p=>p&&p.conn&&p.inRound&&!p.sub);
+function rbarHtml(){
+ if(!roundOpen()||live.phase!=='play')return'';
+ const act=live.order.map(P).filter(p=>p&&p.conn&&p.inRound);if(!act.length)return'';
+ const done=act.filter(p=>p.sub).length,w=act.length-done,el=Math.floor((Date.now()-(live.roundAt||Date.now()))/1000),c=catOf(needCat());
+ return `<div class="rbar"><div class="rb-t"><b>${done}/${act.length}</b> antwoorden binnen<span>${c?c.color+': '+c.ask:''}</span></div><div class="rb-p"><i style="width:${done/act.length*100}%"></i></div>${w&&el>=25?'<button class="rb-f" onclick="reveal(true)">Toch onthullen</button>':''}</div>`;
+}
+/* --- fullscreen onthulling --- */
+let rvT=0;
+function hideRV(){clearTimeout(rvT);const r=$('#rv');if(r)r.className=''}
+function showAllIn(act){
+ const r=$('#rv');clearTimeout(rvT);r.className='on allin';
+ r.innerHTML=`<div class="ai"><div class="ai-ring"></div><div class="ai-t">Iedereen heeft geantwoord!</div><div class="ai-av">${act.map(p=>`<span>${AV[p.idx%25]}</span>`).join('')}</div><div class="ai-s">Het nummer wordt onthuld…</div></div>`;
+}
+function showRV(){
+ const s=curSong(),r=$('#rv');if(!s||!r)return;clearTimeout(rvT);
+ const ct=catOf(needCat());
+ const rows=live.order.map(P).filter(p=>p&&p.res).sort((a,b)=>(b.res.ok-a.res.ok)||a.idx-b.idx).map((p,i)=>`<div class="rv-p ${p.res.ok?'good':'bad'}" style="--pc:${PCOL[p.idx%25]};--i:${i}"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><em>${p.res.none?'geen antwoord':'“'+esc(p.res.ans)+'”'}</em><i>${p.res.ok?'✓':'✗'}</i></div>`).join('');
+ const art=curInfo&&curInfo.art?`<img class="rv-art" src="${esc(curInfo.art)}">`:'<div class="rv-art rv-no">🎵</div>';
+ r.className='on show';
+ r.innerHTML=`<div class="rv-in"><div class="rv-top">${art}<div class="rv-m">${ct?`<div class="rv-cat" style="background:${ct.bg};color:${ct.fg}">${ct.color}: ${ct.ask}</div>`:''}<div class="rv-title">${esc(s.title)}</div><div class="rv-artist">${esc(s.artist)}</div><div class="rv-year">${esc(s.year)}</div></div></div><div class="rv-pl n${Math.min(rows.split('rv-p ').length-1,25)}">${rows}</div><div class="rv-hint">Spatie of klik voor de volgende draai<i></i></div></div>`;
+ rvT=setTimeout(hideRV,15000);
+}
+document.addEventListener('click',e=>{const r=$('#rv');if(r&&r.classList.contains('show')&&r.contains(e.target))hideRV()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hideRV()});
 /* ---------- mediaspeler + fade (ease in / ease out) ---------- */
 let vol=LS.get('tv_vol',0.8),muted=false,fadeSec=LS.get('tv_fade',3),duck=1;
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}; // smoothstep
