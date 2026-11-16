@@ -1,7 +1,8 @@
 /* Hitster Live – lokale server (geen dependencies nodig). Start met: node server.js */
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto');
 const PORT=+process.env.PORT||3000,PUB=path.join(__dirname,'public'),MAXP=+process.env.MAX_PLAYERS||25,TV_KEY=process.env.TV_KEY||'';
-const ROOM=(process.env.ROOM_CODE||Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[crypto.randomInt(24)]).join('')).toUpperCase();
+const ABC='ABCDEFGHJKLMNPQRSTUVWXYZ',rnd=()=>Array.from({length:4},()=>ABC[crypto.randomInt(24)]).join('');
+const FIRST=(process.env.ROOM_CODE||'').toUpperCase();
 const fails=new Map();   // ip -> {n,t}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};
 
@@ -23,7 +24,7 @@ const server=http.createServer((req,res)=>{
  const u=new URL(req.url,'http://x');let p=decodeURIComponent(u.pathname);
  if(p==='/api/info'){
   const ips=lanIPs();res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
-  return res.end(JSON.stringify({port:PORT,ips,players:players.size,tv:!!tv}));
+  return res.end(JSON.stringify({port:PORT,ips,rooms:rooms.size,players:[...rooms.values()].reduce((n,r)=>n+r.players.size,0)}));
  }
  const local=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
  const keyOk=!TV_KEY||u.searchParams.get('key')===TV_KEY;
@@ -83,62 +84,71 @@ server.on('upgrade',(req,sock)=>{
  if(role==='tv'&&TV_KEY&&u.searchParams.get('key')!==TV_KEY){sock.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');sock.destroy();return}
  const acc=crypto.createHash('sha1').update(req.headers['sec-websocket-key']+GUID).digest('base64');
  sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
- attach(new WS(sock),role,req.socket.remoteAddress);
+ attach(new WS(sock),role,req.socket.remoteAddress,(u.searchParams.get('room')||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4));
 });
 
-/* ---------- spelkamer: server is alleen post (de tv beslist) ---------- */
-let tv=null;                       // WS van het tv-scherm
-const players=new Map();           // id -> {ws,name,connected}
-const roster=()=>[...players].map(([id,p])=>({id,name:p.name,connected:p.connected,remote:!!p.remote}));
-const toTV=o=>tv&&tv.send(o);
-function attach(ws,role,ip){
+/* ---------- kamers: server is alleen post (de tv beslist). Elke tv heeft een eigen kamer + roomcode ---------- */
+const rooms=new Map();             // code -> {code,tv,players:Map(id->{ws,name,connected,remote}),idle}
+const roster=r=>[...r.players].map(([id,p])=>({id,name:p.name,connected:p.connected,remote:!!p.remote}));
+const toTV=(r,o)=>r.tv&&r.tv.send(o);
+function newCode(){let c;do{c=(!rooms.size&&FIRST.length===4)?FIRST:rnd()}while(rooms.has(c));return c}
+function getRoom(code){
+ let r=code&&rooms.get(code);
+ if(!r){const c=(code&&code.length===4)?code:newCode();r={code:c,tv:null,players:new Map(),idle:Date.now()};rooms.set(c,r)}
+ return r;
+}
+function attach(ws,role,ip,want){
  if(role==='tv'){
-  if(tv&&tv!==ws){tv.send({t:'replaced'});tv.close()}
-  tv=ws;ws.send({t:'room',code:ROOM});ws.send({t:'roster',players:roster()});
-  for(const p of players.values())p.connected&&p.ws.send({t:'tv',on:true});
-  ws.onclose=()=>{if(tv===ws){tv=null;for(const p of players.values())p.connected&&p.ws.send({t:'tv',on:false})}};
+  const r=getRoom(want);
+  if(r.tv&&r.tv!==ws){r.tv.send({t:'replaced'});r.tv.close()}
+  r.tv=ws;ws.send({t:'room',code:r.code});ws.send({t:'roster',players:roster(r)});
+  for(const p of r.players.values())p.connected&&p.ws.send({t:'tv',on:true});
+  ws.onclose=()=>{if(r.tv===ws){r.tv=null;r.idle=Date.now();for(const p of r.players.values())p.connected&&p.ws.send({t:'tv',on:false})}};
   ws.onmessage=m=>{
    let o;try{o=JSON.parse(m)}catch{return}
-   if(o.t==='to'){const p=players.get(o.id);p&&p.connected&&p.ws.send({t:'msg',data:o.data})}
-   else if(o.t==='all'){for(const p of players.values())p.connected&&p.ws.send({t:'msg',data:o.data})}
-   else if(o.t==='kick'){const p=players.get(o.id);if(p){p.connected&&(p.ws.send({t:'kicked'}),p.ws.close());players.delete(o.id);toTV({t:'roster',players:roster()})}}
-   else if(o.t==='reset'){for(const [id,p] of players){p.connected&&(p.ws.send({t:'kicked'}),p.ws.close())}players.clear();toTV({t:'roster',players:[]})}
+   if(o.t==='to'){const p=r.players.get(o.id);p&&p.connected&&p.ws.send({t:'msg',data:o.data})}
+   else if(o.t==='all'){for(const p of r.players.values())p.connected&&p.ws.send({t:'msg',data:o.data})}
+   else if(o.t==='kick'){const p=r.players.get(o.id);if(p){p.connected&&(p.ws.send({t:'kicked'}),p.ws.close());r.players.delete(o.id);toTV(r,{t:'roster',players:roster(r)})}}
+   else if(o.t==='reset'){for(const [id,p] of r.players){p.connected&&(p.ws.send({t:'kicked',why:'newgame'}),p.ws.close())}r.players.clear();toTV(r,{t:'roster',players:[]})}
   };
   return;
  }
  /* speler */
- let id=null;
+ let id=null,r=null;
  ws.onmessage=m=>{
   let o;try{o=JSON.parse(m)}catch{return}
   if(o.t==='hello'){
    const f=fails.get(ip)||{n:0,t:Date.now()};if(Date.now()-f.t>600000){f.n=0;f.t=Date.now()}
    if(f.n>=8){ws.send({t:'badcode',locked:true});return ws.close()}
-   if(String(o.code||'').trim().toUpperCase()!==ROOM){f.n++;fails.set(ip,f);ws.send({t:'badcode'});return ws.close()}
+   const rm=rooms.get(String(o.code||'').trim().toUpperCase());
+   if(!rm){f.n++;fails.set(ip,f);ws.send({t:'badcode'});return ws.close()}
+   r=rm;
    id=String(o.id||'').slice(0,40)||crypto.randomUUID();
    const name=String(o.name||'Speler').slice(0,16)||'Speler';
-   const old=players.get(id);
-   if(!old&&players.size>=MAXP){ws.send({t:'full'});return ws.close()}
+   const old=r.players.get(id);
+   if(!old&&r.players.size>=MAXP){ws.send({t:'full'});return ws.close()}
    if(old&&old.connected&&old.ws!==ws){old.ws.onclose=null;old.ws.send({t:'kicked',why:'elders'});old.ws.close()}
-   players.set(id,{ws,name,connected:true,remote:!!o.remote});
-   ws.send({t:'welcome',id,tv:!!tv});
-   toTV({t:old?'rejoin':'join',id,name,players:roster()});
+   r.players.set(id,{ws,name,connected:true,remote:!!o.remote});
+   ws.send({t:'welcome',id,tv:!!r.tv});
+   toTV(r,{t:old?'rejoin':'join',id,name,players:roster(r)});
   }else if(id){
    if(o.t==='ping'){ws.send({t:'pong',c:o.c});return}
-   if(o.t==='rename'){const p=players.get(id);if(p){p.name=String(o.name||'').slice(0,16)||p.name;toTV({t:'roster',players:roster()})}}
-   else toTV({t:'msg',id,data:o});
+   if(o.t==='rename'){const p=r.players.get(id);if(p){p.name=String(o.name||'').slice(0,16)||p.name;toTV(r,{t:'roster',players:roster(r)})}}
+   else toTV(r,{t:'msg',id,data:o});
   }
  };
- ws.onclose=()=>{const p=id&&players.get(id);if(p&&p.ws===ws){p.connected=false;toTV({t:'leave',id,players:roster()})}};
+ ws.onclose=()=>{const p=id&&r&&r.players.get(id);if(p&&p.ws===ws){p.connected=false;r.idle=Date.now();toTV(r,{t:'leave',id,players:roster(r)})}};
 }
 setInterval(()=>{
- const all=[...(tv?[tv]:[]),...[...players.values()].filter(p=>p.connected).map(p=>p.ws)];
+ const all=[];for(const r of rooms.values()){r.tv&&all.push(r.tv);for(const p of r.players.values())p.connected&&all.push(p.ws)}
+ for(const [c,r] of rooms)if(!r.tv&&![...r.players.values()].some(p=>p.connected)&&Date.now()-r.idle>6*3600e3)rooms.delete(c);
  for(const ws of all){if(!ws.alive){ws.end();continue}ws.alive=false;ws.ping()}
 },15000);
 
 server.listen(PORT,'0.0.0.0',()=>{
  const ips=lanIPs();
  console.log('\n  🎵  HITSTER LIVE draait\n');
- console.log('  Roomcode:              '+ROOM+'  (staat ook op de tv)');
+ console.log('  Roomcode:              verschijnt op elke tv (elke tv = eigen kamer)');
  console.log('  Tv (open op deze pc):  http://localhost:'+PORT+'/');
  console.log('  Telefoons joinen via:  '+(ips[0]?'http://'+ips[0].ip+':'+PORT+'/play':'(geen netwerk gevonden)'));
  if(ips.length>1)console.log('  Andere adressen:       '+ips.slice(1).map(i=>i.ip+' ('+i.name+')').join(', '));

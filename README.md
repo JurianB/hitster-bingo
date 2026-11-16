@@ -23,3 +23,6 @@ Op de telefoon draai je het rad door eroverheen te swipen (hoe harder, hoe harde
 
 ## Spelen op afstand
 Bij het joinen kiezen spelers **📺 Zelfde kamer** of **🌐 Op afstand**. Spelers op afstand horen de 30-seconden-preview synchroon op hun eigen toestel (de tv stuurt URL + positie, de telefoon corrigeert op basis van gemeten ping en drift > 0,35 s) en krijgen na de onthulling een songkaartje. Ze gebruiken dezelfde roomcode en dezelfde site-URL. De tv moet wel in beeld/geluid staan voor de ronde-flow; de 🔊-knop in de telefoon dempt de muziek. Op iOS moet de speler één keer tikken om geluid toe te staan.
+
+## Meerdere kamers
+Elke tv die verbindt krijgt een eigen kamer met eigen roomcode; spelers komen alleen in de kamer van hun code. `TV_KEY` beschermt alleen de tv-pagina. Een tv onthoudt zijn code (ook na herladen of serverherstart). Open `/tv?key=...&room=NEW` voor een nieuwe kamer, of `&room=ABCD` voor een vaste code. Gebruik voor twee tv's wel aparte apparaten of browserprofielen: het spelverloop wordt per browser opgeslagen. Lege kamers worden na 6 uur opgeruimd.

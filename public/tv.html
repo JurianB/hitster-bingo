@@ -1413,7 +1413,7 @@ let autoT=0;
 let ws=null,wsOk=false;
 function connect(){
  if(location.protocol==='file:'){wsOk=false;updatePills();return}
- ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws?role=tv&key=${encodeURIComponent(new URLSearchParams(location.search).get('key')||'')}`);
+ ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws?role=tv&key=${encodeURIComponent(new URLSearchParams(location.search).get('key')||'')}&room=${encodeURIComponent(wantRoom())}`);
  ws.onopen=()=>{wsOk=true;updatePills()};
  ws.onclose=()=>{wsOk=false;updatePills();setTimeout(connect,1500)};
  ws.onmessage=e=>{try{onServer(JSON.parse(e.data))}catch(err){console.error(err)}};
@@ -1429,8 +1429,9 @@ function ensureP(id,name){
  p.conn=true;return p;
 }
 let roomCode='';
+function wantRoom(){const q=(new URLSearchParams(location.search).get('room')||'').toUpperCase();return q==='NEW'?'':(q||LS.get('tv_room','')||'')}
 function onServer(m){
- if(m.t==='room'){roomCode=m.code;renderLobby();return}
+ if(m.t==='room'){roomCode=m.code;LS.set('tv_room',m.code);renderLobby();return}
  if(m.t==='replaced'){document.body.innerHTML='<h1 style="padding:2rem">Dit tv-scherm is overgenomen door een ander venster.</h1>';return}
  if(m.t==='roster'){
   const on=new Set(m.players.filter(x=>x.connected).map(x=>x.id));
@@ -1582,11 +1583,11 @@ function startGame(){
  sendAll({k:'phase',phase:'play'});broadcastTurn();saveLive();renderLobby();renderPlayers();render();
 }
 function newGame(){
- if(!confirm('Nieuw spel starten? Iedereen krijgt een nieuwe kaart (spelers blijven verbonden).'))return;
+ if(!confirm('Nieuw spel starten? Alle spelers worden losgekoppeld en moeten opnieuw meedoen (naam bevestigen en kiezen: zelfde kamer of op afstand).'))return;
  audio.pause();clearTimeout(autoT);
  state={drawn:[],cur:null,shown:false};saveState();
  live.phase='lobby';live.won=[];live.turn=null;live.spinner=null;
- live.order.forEach(id=>{const p=P(id);p.card=makeCard();p.pick=null;p.answer=null;p.sub=false;p.res=null;p.inRound=false;if(p.conn)sendTo(id,stateFor(id))});
+ wsSend({t:'reset'});live.players={};live.order=[];live.nextIdx=0;joinOpen=true;
  saveLive();lastH=null;render();renderLobby();renderPlayers();
 }
 $('#reset').onclick=newGame;

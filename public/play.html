@@ -148,6 +148,7 @@ const DECL=d=>({'00s':'2000','10s':'2010','20s':'2020'}[d]||('19'+d.slice(0,2)))
 let myId=LS.get('hl_id',null);if(!myId){myId=(crypto.randomUUID?crypto.randomUUID():'p'+Math.random().toString(36).slice(2)+Date.now().toString(36));LS.set('hl_id',myId)}
 let myName=LS.get('hl_name','');
 let remote=LS.get('hl_remote','0')==='1';
+let needChoice=LS.get('hl_force','0')==='1';
 const au=new Audio();au.preload='auto';au.playsInline=true;
 let muted=LS.get('hl_mute','0')==='1',rtt=0,mus=null,musAt=0,unlocked=false;
 
@@ -177,6 +178,7 @@ function on(m){
  if(m.t==='badcode'){stop=true;S=null;show('join');$('#rc').value='';$('#joinmsg').textContent=m.locked?'Te veel pogingen. Probeer het over een paar minuten opnieuw.':'Onjuiste roomcode. Kijk op de tv.';return}
  if(m.t==='full'){stop=true;show('join');$('#joinmsg').textContent='Het spel zit vol (max 25 spelers).';return}
  if(m.t==='pong'){const r=Date.now()-m.c;rtt=rtt?rtt*.6+r*.4:r;return}
+ if(m.t==='kicked'&&m.why==='newgame'){LS.set('hl_force','1');try{au.pause()}catch{}location.reload();return}
  if(m.t==='kicked'){stop=true;S=null;show('join');$('#joinmsg').textContent=m.why==='elders'?'Je bent op een ander apparaat ingelogd.':'Je bent uit het spel verwijderd.';return}
  if(m.t!=='msg')return;
  const d=m.data||{};
@@ -391,21 +393,23 @@ function wheelSet(cat){const i=WI[cat];if(i==null)return;rot=-(i+.5)*72;vel=0;ea
 function start(){
  myName=($('#nm').value||'').trim().slice(0,16);myCode=($('#rc').value||'').trim().toUpperCase();
  if(!myName){$('#nm').focus();return}
+ if(needChoice){$('#joinmsg').textContent='Kies: zelfde kamer of op afstand.';return}
+ LS.set('hl_force','0');
  if(myCode.length!==4){$('#rc').focus();$('#joinmsg').textContent='Vul de roomcode van 4 letters in.';return}
  $('#joinmsg').textContent='';LS.set('hl_name',myName);LS.set('hl_code',myCode);LS.set('hl_remote',remote?'1':'0');applyRemote();unlockAudio();stop=false;show('game');wake();draw();connect();
 }
-document.querySelectorAll('#where button').forEach(b=>b.onclick=()=>{remote=b.dataset.r==='1';applyRemote()});
+document.querySelectorAll('#where button').forEach(b=>b.onclick=()=>{needChoice=false;remote=b.dataset.r==='1';applyRemote()});
 $('#go').onclick=start;$('#nm').onkeydown=e=>{if(e.key==='Enter')$('#rc').focus()};$('#rc').onkeydown=e=>{if(e.key==='Enter')start()};$('#rc').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'')};
 $('#nm').value=myName;$('#rc').value=myCode;
 applyRemote();
-if(myName&&myCode.length===4){show('game');wake();draw();connect()}else show('join');
+if(myName&&myCode.length===4&&!needChoice){show('game');wake();draw();connect()}else show('join');
 
 /* ---------- op afstand: muziek synchroon ---------- */
 const SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 function applyRemote(){
  document.body.classList.toggle('remote',remote);
- document.querySelectorAll('#where button').forEach(b=>b.classList.toggle('on',(b.dataset.r==='1')===remote));
- $('#wherenote').textContent=remote?'Je hoort de muziek van de tv synchroon op dit toestel. Het rad en de onthulling zie je op je telefoon.':'Je hoort de muziek via de tv in de kamer.';
+ document.querySelectorAll('#where button').forEach(b=>b.classList.toggle('on',!needChoice&&(b.dataset.r==='1')===remote));
+ $('#wherenote').textContent=needChoice?'Nieuw spel: kies hoe je meedoet.':remote?'Je hoort de muziek van de tv synchroon op dit toestel. Het rad en de onthulling zie je op je telefoon.':'Je hoort de muziek via de tv in de kamer.';
  $('#mute').textContent=muted?'🔇':'🔊';au.muted=muted;
 }
 function unlockAudio(){
