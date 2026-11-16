@@ -694,6 +694,64 @@ nav .pill{margin-left:.2rem}
 @keyframes crossPop{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
 .rv-hint{animation-delay:5.2s}.rv-hint i{animation-delay:5.2s}
 .pl .rem{font-size:.8em;margin-left:.3em;opacity:.85}
+
+/* ---- rad samenstellen ---- */
+.catpick{margin:.2rem 0 1rem}.cp-h{font-weight:900;font-size:1.05rem;margin-bottom:.45rem;color:#ddd}
+#catPick{display:flex;flex-wrap:wrap;gap:.45rem}
+#catPick .cp{display:flex;align-items:center;gap:.4rem;border:.15rem solid var(--c);background:#ffffff0d;color:#fff;border-radius:2rem;padding:.35rem .85rem .35rem .45rem;font:800 1rem inherit;font-family:inherit;cursor:pointer;opacity:.55;transition:all .2s}
+#catPick .cp i{width:1.3rem;height:1.3rem;border-radius:50%;border:.14rem solid var(--c);display:grid;place-items:center;font-style:normal;font-size:.85rem;color:var(--f)}
+#catPick .cp.on{background:var(--c);color:var(--f);opacity:1;box-shadow:0 .2rem 1rem color-mix(in srgb,var(--c) 55%,transparent)}
+#catPick .cp.on i{background:#ffffff55;border-color:#fff}
+#catPick.lock{pointer-events:none;opacity:.6}
+/* ---- rad: categorie klaar ---- */
+#wmsg{position:fixed;left:0;right:0;top:9vh;z-index:46;display:none;justify-content:center;pointer-events:none}
+#wmsg.on{display:flex}
+.wm-in{background:#150a28f2;border:.2rem solid #ffd23f;border-radius:1.4rem;padding:.8rem 2rem;font-size:min(3.2vw,5vh);font-weight:800;text-align:center;box-shadow:0 1rem 3rem #000a;animation:wmIn .5s cubic-bezier(.2,1.5,.4,1)}
+.wm-in b{font-weight:900;margin-left:.3em}.wm-in small{display:block;font-size:.5em;opacity:.8;font-weight:700;margin-top:.2rem}
+.wm-c{display:inline-block;background:var(--c);color:var(--f);border-radius:.7rem;padding:0 .6rem;font-weight:900}
+@keyframes wmIn{from{transform:translateY(-120%) scale(.8);opacity:0}to{transform:none;opacity:1}}
+/* ---- fullscreen countdown met hartslag ---- */
+#grace{position:fixed;inset:0;left:0;right:0;top:0;bottom:0;transform:none;border:0;border-radius:0;padding:0;gap:0;z-index:55;pointer-events:none;background:radial-gradient(circle at 50% 50%,#2a0510b8 0%,#000000c0 100%);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#grace.on{display:flex;animation:grFade .35s ease-out}
+#grace::before{content:'';position:absolute;inset:0;box-shadow:inset 0 0 18vmin 4vmin #ff1744;opacity:0;animation:grVig 1s ease-out}
+#grace.u2::before,#grace.u1::before{box-shadow:inset 0 0 24vmin 8vmin #ff1744}
+@keyframes grFade{from{opacity:0}to{opacity:1}}
+@keyframes grVig{0%{opacity:.95}14%{opacity:.25}24%{opacity:.75}60%{opacity:.1}100%{opacity:.05}}
+#grace .gr-top{font-size:min(4.5vw,7vh);font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#ffb3bd}
+#grace .gr-n{width:auto;height:auto;border-radius:0;background:none;display:block;font-size:min(46vh,38vw);line-height:.95;font-weight:900;color:#fff;text-shadow:0 0 4vmin #ff1744,0 0 12vmin #ff1744aa;animation:grBeat 1s ease-out}
+#grace.u1 .gr-n{color:#ffd23f;text-shadow:0 0 4vmin #ff5a00,0 0 14vmin #ff1744}
+#grace .gr-t{font-size:min(3.2vw,5vh);font-weight:800}
+#grace .gr-w{margin-top:1.6vh;font-size:min(2.4vw,3.6vh);color:#ffd9de;font-weight:700;opacity:.9}
+@keyframes grBeat{0%{transform:scale(1.32)}12%{transform:scale(.97)}20%{transform:scale(1.16)}36%{transform:scale(1)}100%{transform:scale(1)}}
+#grace .gr-ring{position:absolute;left:50%;top:50%;width:min(60vh,50vw);aspect-ratio:1;margin:calc(min(60vh,50vw)/-2) 0 0 calc(min(60vh,50vw)/-2);border-radius:50%;border:.8vmin solid #ff5a6e;opacity:0;animation:grRing 1s ease-out}
+#grace .gr-ring.r2{animation-delay:.19s;border-color:#ffd23f}
+@keyframes grRing{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+/* ---- bingo / volle kaart ---- */
+#winner{overflow:hidden}
+#winner.on{display:flex}
+#winner.full{background:radial-gradient(circle,#3a1a6ee6,#0a0414f2);backdrop-filter:blur(6px)}
+#winner.full::before{content:'';position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg,#ffd23f22 0 8deg,transparent 8deg 20deg);animation:spinRays 14s linear infinite}
+@keyframes spinRays{to{transform:rotate(360deg)}}
+.wn{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4rem;animation:wnIn .8s cubic-bezier(.2,1.6,.4,1)}
+.wn .wn-e{font-size:min(16vw,24vh);line-height:1;animation:wnBob 1.1s ease-in-out infinite alternate}
+.wn h1{margin:0;font-size:min(15vw,24vh);line-height:1;font-weight:900;background:linear-gradient(90deg,#ffd23f,#ff7ab8,#3fa0ff,#38d27a,#ffd23f);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rb 2s linear infinite;filter:drop-shadow(0 .5rem 1.5rem #000a)}
+.wn .wn-n{margin:.4rem 0 0;font-size:min(8vw,13vh);font-weight:900;color:#fff;text-shadow:0 .4rem 2rem #000a}
+.wn .wn-s{margin:0;font-size:min(3.6vw,6vh);font-weight:800;color:#ffe9a6}
+.wn.again h1{font-size:min(11vw,18vh)}
+.wn.full h1{font-size:min(13vw,21vh)}
+.wn.full .wn-e{font-size:min(22vw,34vh)}
+@keyframes rb{to{background-position:300% 0}}
+@keyframes wnIn{from{transform:scale(.2) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes wnBob{from{transform:translateY(-1.5vh) rotate(-6deg)}to{transform:translateY(1.5vh) rotate(6deg)}}
+#winner .fl{position:absolute;font-size:min(8vw,12vh);animation:flt 3.4s ease-in-out infinite alternate}
+#winner .f1{left:8%;top:12%}#winner .f2{right:9%;top:14%;animation-delay:.4s}#winner .f3{left:12%;bottom:14%;animation-delay:.8s}#winner .f4{right:11%;bottom:12%;animation-delay:1.2s}#winner .f5{left:44%;top:5%;animation-delay:.6s}#winner .f6{left:46%;bottom:5%;animation-delay:1s}
+@keyframes flt{from{transform:translateY(-3vh) rotate(-12deg) scale(.9)}to{transform:translateY(3vh) rotate(12deg) scale(1.15)}}
+/* ---- grotere kaartjes van de spelers ---- */
+#spelen .players.c1 .mini,#spelen[data-f] .players.c1 .mini{width:min(var(--mw,9rem),46cqw)!important;gap:3px}
+#spelen .players.c2 .mini,#spelen[data-f] .players.c2 .mini{width:min(var(--mw,9rem),42cqw)!important;gap:3px}
+#spelen .players.c3 .mini,#spelen[data-f] .players.c3 .mini{width:min(var(--mw,9rem),38cqw)!important}
+#spelen .players.c4 .mini,#spelen[data-f] .players.c4 .mini{width:min(var(--mw,9rem),34cqw)!important}
+.mini .m{border-radius:3px}
 </style>
 </head>
 <body>
@@ -760,6 +818,7 @@ nav .pill{margin-left:.2rem}
   <div class="lob-r">
    <h2>Doe mee met je telefoon!</h2>
    <ol><li>Dezelfde wifi als de tv? Scan de <b>QR-code</b> met je camera</li><li>Speel je op afstand? Ga naar het adres en vul de <b>roomcode</b> in</li><li>Vul je naam in en speel mee</li></ol>
+   <div class="catpick"><div class="cp-h">🎡 Rad samenstellen</div><div id="catPick"></div></div>
    <div class="lob-pl" id="lobPl"></div>
    <button class="pri big" id="lobStart" disabled>Wacht op spelers…</button>
    <div class="mut lob-sub" id="lobSub"></div>
@@ -768,6 +827,7 @@ nav .pill{margin-left:.2rem}
 </div>
 <div id="rv"></div>
 <div id="grace"></div>
+<div id="wmsg"></div>
 <canvas id="fx"></canvas>
 <div id="winner"></div>
 
@@ -1116,16 +1176,17 @@ const CATS=[
  {type:'decade',label:'Decennium',color:'Paars',bg:'#9b5de5',fg:'#ffffff',ask:'noem het decennium'},
  {type:'near',label:'± 3 jaar',color:'Blauw',bg:'#3fa0ff',fg:'#00203d',ask:'noem het release jaar (± 3 jaar)'}];
 const catOf=type=>CATS.find(c=>c.type===type);
+let WCATS=CATS.slice(),WW=null,WF=null,WFa=0,wheelBusy=false;
 function drawWheel(){document.querySelectorAll('canvas.wheel').forEach(drawOne)}
 const mixHex=(a,b,k)=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*k)).join(',')+')'};
 function drawOne(c){
- const x=c.getContext('2d'),R=c.width/2,n=CATS.length,a=2*Math.PI/n,Rr=R-14;
+ const x=c.getContext('2d'),R=c.width/2,L=WCATS,n=L.length,Rr=R-14,W=L.map(q=>WW&&WW[q.type]!=null?WW[q.type]:1),TW=W.reduce((u,v)=>u+v,0)||1,ST=[];{let u=0;W.forEach(v=>{ST.push(u);u+=v})}const A=i=>-Math.PI/2+ST[i]/TW*2*Math.PI;
  x.clearRect(0,0,c.width,c.height);
  for(let i=0;i<n;i++){
-  const cat=CATS[i],a0=-Math.PI/2+i*a,a1=a0+a;
+  const cat=L[i],a0=A(i),a1=a0+W[i]/TW*2*Math.PI;if(W[i]<.003)continue;
   const g=x.createRadialGradient(R,R,R*.18,R,R,Rr);
   g.addColorStop(0,mixHex(cat.bg,'#2b0b55',.38));g.addColorStop(.55,mixHex(cat.bg,'#2b0b55',.08));g.addColorStop(1,cat.bg);
-  x.beginPath();x.moveTo(R,R);x.arc(R,R,Rr,a0,a1);x.closePath();x.fillStyle=g;x.fill();
+  x.beginPath();x.moveTo(R,R);x.arc(R,R,Rr,a0,a1);x.closePath();x.fillStyle=g;x.fill();if(WF===cat.type&&WFa>0){x.fillStyle='rgba(255,255,255,'+WFa+')';x.fill()}
   /* zachte lichtreflectie bovenin elk vak */
   const h=x.createLinearGradient(0,0,0,R*2);h.addColorStop(0,'rgba(255,255,255,.16)');h.addColorStop(.5,'rgba(255,255,255,0)');
   x.fillStyle=h;x.fill();
@@ -1135,14 +1196,14 @@ function drawOne(c){
   if('letterSpacing' in x)x.letterSpacing='1px';
   x.textAlign='right';x.textBaseline='middle';
   x.shadowColor='rgba(25,0,50,.45)';x.shadowBlur=14;x.shadowOffsetY=3;
-  x.fillStyle='#fff';x.fillText(cat.label,Rr-34,0);
+  x.globalAlpha=Math.max(0,Math.min(1,(W[i]-.4)/.6));x.fillStyle='#fff';x.fillText(cat.label,Rr-34,0);
   x.restore();
  }
  /* rand: glazen ring + pinnetjes */
  x.beginPath();x.arc(R,R,Rr+1,0,7);x.strokeStyle='rgba(255,255,255,.22)';x.lineWidth=18;x.stroke();
  x.beginPath();x.arc(R,R,Rr-9,0,7);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=2;x.stroke();
  for(let i=0;i<n;i++){
-  const an=-Math.PI/2+i*a;
+  if(W[i]<.003)continue;const an=A(i);
   x.save();x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=8;x.shadowOffsetY=2;
   x.beginPath();x.arc(R+Math.cos(an)*(Rr+1),R+Math.sin(an)*(Rr+1),9,0,7);x.fillStyle='#fff';x.fill();x.restore();
  }
@@ -1269,12 +1330,14 @@ async function play(){
 }
 async function spin(dir,force){
  dir=dir===-1?-1:1;
- if(spinning)return;
+ if(spinning||wheelBusy)return;
  const left=songs.filter(s=>!state.drawn.includes(key(s)));
  if(!left.length){setStage('<div class="q">🎉</div><div class="title">Alle nummers gehad!</div>');return}
+ wheelBusy=true;try{await wheelSync()}finally{wheelBusy=false}
+ if(!WCATS.length){say("Alle kaarten zijn vol! 🎉");return}
  stopSoft(1500);liveSpinStart();
  const s=left[Math.random()*left.length|0];
- const i=Math.random()*CATS.length|0,n=CATS.length,seg=360/n;
+ const i=Math.random()*WCATS.length|0,n=WCATS.length,seg=360/n;
  const center=(i+.5)*seg+(Math.random()-.5)*seg*.7;
  const target=((360-center)%360+360)%360;
  const m=v=>((v%360)+360)%360;
@@ -1291,7 +1354,7 @@ async function spin(dir,force){
  rot+=extra;sendAll({k:'anim',dur,extra,fin:((rot%360)+360)%360});document.querySelectorAll('canvas.wheel').forEach(w=>w.style.transform=`rotate(${rot}deg)`);
  await new Promise(r=>setTimeout(r,dur*1000+200));
  spinning=false;landWheel();
- state.drawn.push(key(s));state.cur=key(s);state.shown=false;(state.catOf=state.catOf||{})[key(s)]=CATS[i].type;saveState();liveRoundStart();
+ state.drawn.push(key(s));state.cur=key(s);state.shown=false;(state.catOf=state.catOf||{})[key(s)]=WCATS[i].type;saveState();liveRoundStart();
  await play();
 }
 function reveal(f){if(state.cur&&!state.shown){if(f!==true&&live.phase==='play'){const w=waitingFor();if(w.length){say('Wacht tot iedereen heeft geantwoord: '+w.map(p=>p.name).join(', '));return}}clearTimeout(autoT);state.shown=true;saveState();judgeAll();render();showRV()}}
@@ -1398,10 +1461,12 @@ const LINES=(()=>{const L=[];for(let i=0;i<5;i++){L.push([0,1,2,3,4].map(c=>i*5+
 const AV=['🦊','🐼','🐸','🦉','🐙','🦄','🐯','🐵','🐧','🦁','🐳','🦋','🐶','🐱','🐰','🐻','🐨','🐷','🐢','🦖','🦈','🦜','🐝','🦔','🐞'];
 const PCOL=Array.from({length:25},(_,i)=>`hsl(${Math.round(i*137.5)%360} 85% 66%)`);
 let live=LS.get('tv_live',null)||{players:{},order:[],phase:'lobby',auto:true,turn:null,spinner:null,won:[],nextIdx:0};
-live.players=live.players||{};live.won=live.won||[];live.nextIdx=live.nextIdx||live.order.length;
+live.players=live.players||{};live.won=live.won||[];live.cats=(live.cats&&live.cats.length)?live.cats:CATS.map(c=>c.type);live.fulls=live.fulls||0;live.nextIdx=live.nextIdx||live.order.length;
 Object.values(live.players).forEach(p=>{p.conn=false});
 const saveLive=()=>LS.set('tv_live',live);
-const makeCard=()=>shuffle(CATS.flatMap(c=>Array(5).fill(c.type))).map(type=>({type,ok:false}));
+const activeCats=()=>{const a=CATS.filter(c=>(live.cats||[]).includes(c.type));return a.length?a:CATS.slice()};
+const makeCard=()=>{const A=activeCats(),k=A.length,base=Math.floor(25/k),extra=shuffle(A.map(c=>c.type)).slice(0,25-base*k);return shuffle(A.flatMap(c=>Array(base+(extra.includes(c.type)?1:0)).fill(c.type))).map(type=>({type,ok:false}))};
+const hasOpen=(p,t)=>!!p&&p.card.some(c=>c.type===t&&!c.ok);
 const needCat=()=>(state.catOf||{})[state.cur];
 const roundOpen=()=>!!state.cur&&!state.shown&&!spinning;
 const canSpinNow=()=>live.phase==='play'&&!spinning&&(!state.cur||state.shown);
@@ -1489,12 +1554,12 @@ function roundFor(p){
  if(spinning)return{s:'spin'};
  if(!state.cur)return{s:'idle'};
  const c=catOf(needCat());
- return{s:state.shown?'revealed':'open',cat:needCat(),ask:c&&c.ask,color:c&&c.color,pick:p.pick,sub:p.sub,ans:p.sub?p.answer:null,res:p.res,inRound:p.inRound};
+ return{s:state.shown?'revealed':'open',cat:needCat(),ask:c&&c.ask,color:c&&c.color,pick:p.pick,sub:p.sub,ans:p.sub?p.answer:null,res:p.res,inRound:p.inRound,skip:!p.inRound&&p.conn&&!hasOpen(p,needCat())};
 }
 function turnInfo(){const t=P(live.turn);return{who:live.turn,name:t&&t.name,ready:canSpinNow()}}
 function stateFor(id){
  const p=P(id);
- return{k:'state',name:p.name,av:AV[p.idx%25],col:PCOL[p.idx%25],card:cardOut(p),phase:live.phase,won:live.won.includes(id),round:roundFor(p),turn:turnInfo(),n:state.drawn.length};
+ return{k:'state',name:p.name,av:AV[p.idx%25],col:PCOL[p.idx%25],card:cardOut(p),phase:live.phase,won:live.won.includes(id),bingos:p.bingos||0,full:!!p.full,cats:activeCats().map(c=>c.type),wheel:WCATS.map(c=>c.type),round:roundFor(p),turn:turnInfo(),n:state.drawn.length};
 }
 const broadcastTurn=()=>sendAll({k:'turn',...turnInfo()});
 
@@ -1517,10 +1582,11 @@ function liveSpinStart(){
  saveLive();renderPlayers();
 }
 function liveRoundStart(){
- live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.typing=0;p.inRound=p.conn});
+ const cat=needCat();
+ live.order.forEach(id=>{const p=P(id);p.pick=null;p.answer=null;p.sub=false;p.res=null;p.typing=0;p.inRound=!!(p.conn&&hasOpen(p,cat))});
  live.roundAt=Date.now();
- const c=catOf(needCat());
- sendAll({k:'round',n:state.drawn.length,cat:needCat(),ask:c.ask,color:c.color});
+ const c=catOf(cat);
+ live.order.forEach(id=>{const p=P(id);if(p.conn)sendTo(id,{k:'round',n:state.drawn.length,cat,ask:c.ask,color:c.color,inRound:p.inRound,skip:!p.inRound});});
  advanceTurn();broadcastTurn();saveLive();renderPlayers();
 }
 const holdsRound=p=>p.inRound&&!p.sub&&p.pick!=null&&!p.conn&&Date.now()-(p.offAt||0)<20000;
@@ -1567,19 +1633,23 @@ function judgeAll(){
   if(ok)p.card[p.pick].ok=true;
  });
  live.order.forEach(id=>{
-  const p=P(id);if(!p)return;
-  if(LINES.some(l=>l.every(j=>p.card[j].ok))&&!live.won.includes(id)){live.won.push(id);fresh.push(p.name)}
+  const p=P(id);if(!p)return;p.fresh=0;
+  const nb=LINES.filter(l=>l.every(j=>p.card[j].ok)).length,prev=p.bingos||0,full=p.card.every(c=>c.ok);
+  if(nb>prev){p.bingos=nb;p.fresh=1;if(!live.won.includes(id))live.won.push(id);fresh.push({kind:'bingo',name:p.name,n:nb,prev,gain:nb-prev})}
+  if(full&&!p.full){p.full=true;p.fresh=2;live.fulls=(live.fulls||0)+1;const i=fresh.findIndex(f=>f.name===p.name&&f.kind==='bingo');if(i>=0)fresh.splice(i,1);fresh.push({kind:'full',name:p.name,rank:live.fulls})}
  });
- resFn=()=>live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.res)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id),song:p.remote?songInfo():undefined})});
+ resFn=()=>live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.res)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id),bingos:p.bingos||0,full:!!p.full,fresh:p.fresh||0,song:p.remote?songInfo():undefined})});
  clearTimeout(resT);resT=setTimeout(flushRes,RV_LAST+400);
  broadcastTurn();saveLive();renderPlayers();
- if(fresh.length)setTimeout(()=>celebrate(fresh.join(' & ')),RV_LAST+1500);
- else if(live.order.some(id=>P(id).res&&P(id).res.ok))setTimeout(()=>confetti(innerWidth*.5,innerHeight*.55,70,1.1),RV_LAST+200);
+ if(fresh.length)setTimeout(()=>fresh.forEach(queueWin),RV_LAST+1500);
+ if(live.order.some(id=>P(id).res&&P(id).res.ok)&&!fresh.length)setTimeout(()=>confetti(innerWidth*.5,innerHeight*.55,70,1.1),RV_LAST+200);
 }
 /* --- spel starten / opnieuw --- */
 function startGame(){
  if(songs.length<24){say('Minimaal 24 nummers nodig (nu '+songs.length+')');return}
- live.phase='play';joinOpen=false;fixTurn();
+ live.phase='play';joinOpen=false;
+ live.order.forEach(id=>{const p=P(id);p.card=makeCard();p.bingos=0;p.full=false;p.fresh=0;p.res=null});WCATS=activeCats();WW=null;
+ fixTurn();live.order.forEach(id=>{if(P(id).conn)sendTo(id,stateFor(id))});
  sendAll({k:'phase',phase:'play'});broadcastTurn();saveLive();renderLobby();renderPlayers();render();
 }
 function newGame(){
@@ -1587,7 +1657,7 @@ function newGame(){
  audio.pause();clearTimeout(autoT);
  state={drawn:[],cur:null,shown:false};saveState();
  live.phase='lobby';live.won=[];live.turn=null;live.spinner=null;
- wsSend({t:'reset'});live.players={};live.order=[];live.nextIdx=0;joinOpen=true;
+ wsSend({t:'reset'});live.players={};live.order=[];live.nextIdx=0;live.fulls=0;WCATS=activeCats();WW=null;joinOpen=true;
  saveLive();lastH=null;render();renderLobby();renderPlayers();
 }
 $('#reset').onclick=newGame;
@@ -1598,11 +1668,12 @@ $('#auto').onchange=e=>{live.auto=e.target.checked;saveLive();checkAllAnswered()
 function statusOf(id,p){
  if(!p.conn){if(roundOpen()&&p.inRound&&p.pick!=null&&!p.sub)return['warn','⚠️ Offline · vakje al gekozen'];return['off','Offline']}
  if(live.phase==='lobby')return['ok','Klaar ✓'];
- if(live.won.includes(id)&&!roundOpen())return['win','🎉 BINGO!'];
+ if(p.full&&!roundOpen())return['win','🏆 VOLLE KAART!'];
+ if((p.bingos||0)>0&&!roundOpen())return['win','🎉 '+(p.bingos>1?p.bingos+'× ':'')+'BINGO!'];
  if(spinning)return live.spinner===id?['spin','Draait aan het rad 🎡']:['idle','Kijkt naar het rad'];
  if(!state.cur)return live.turn===id?['turn','🎡 Aan de beurt om te draaien!']:['idle','Wacht op de beurt van '+((P(live.turn)||{}).name||'…')];
  if(!state.shown){
-  if(!p.inRound)return['idle','Doet mee vanaf de volgende ronde'];
+  if(!p.inRound){const cc=catOf(needCat());return hasOpen(p,needCat())?['idle','Doet mee vanaf de volgende ronde']:['done','✨ Alle '+(CLR[needCat()]||'')+' vakjes al af · wacht niet']}
   const k=STEP[needCat()]||STEP.title;
   if(p.sub)return['done','✅ Antwoord ingestuurd'];
   if(p.pick==null)return['think','🔍 Kiest een vakje…'];
@@ -1627,7 +1698,16 @@ function drawPlayers(){
    <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b>${p.remote?'<span class="rem" title="Speelt op afstand">🌐</span>':''}<button class="kick" title="Verwijderen">✕</button></div>
    <div class="pl-b"><div class="pl-s">${txt}</div><div class="mini">${mini}</div></div>
   </div>`}).join('');
+ fitMini(box);
 }
+function fitMini(box){
+ box.style.setProperty('--mw','12rem');
+ const tiles=[...box.querySelectorAll('.pl')];if(!tiles.length)return;
+ const rows=new Set(tiles.map(x=>x.offsetTop)).size,rb=box.querySelector('.rbar'),gap=10;
+ const H=box.clientHeight-(rb?rb.offsetHeight+gap:0),per=(H-(rows-1)*gap)/rows;
+ box.style.setProperty('--mw',Math.max(46,Math.min(230,per-74))+'px');
+}
+addEventListener('resize',()=>renderPlayers());
 const TYPES_CLS={title:'t-title',year:'t-year',artist:'t-artist',decade:'t-decade',near:'t-near'};
 $('#players').onclick=e=>{
  const k=e.target.closest('.kick');if(!k)return;
@@ -1665,6 +1745,7 @@ function renderLobby(){
  $('#lobAlt').innerHTML=lanUrls.length>1?'Werkt het niet? Probeer: '+lanUrls.map((u,i)=>`<button data-i="${i}" class="${i===urlIdx?'on':''}">${esc(u.replace('http://','').replace('/play',''))}</button>`).join(''):'';
  const ids=live.order.filter(id=>P(id));
  $('#lobPl').innerHTML=ids.length?ids.map(id=>{const p=P(id);return `<span class="chip ${p.conn?'':'off'}" style="--pc:${PCOL[p.idx%25]}"><span class="av">${AV[p.idx%25]}</span>${esc(p.name)}</span>`}).join(''):'<span class="mut">Wachten op de eerste speler…</span>';
+ drawCatPick();
  const n=ids.filter(id=>P(id).conn).length;
  const b=$('#lobStart');b.disabled=!n&&live.phase==='lobby';
  b.textContent=live.phase==='lobby'?(n?`▶ Start het spel (${n} speler${n===1?'':'s'})`:'Wacht op spelers…'):'Sluiten';
@@ -1740,13 +1821,35 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')hideRV()});
 $('#lobFs').onclick=()=>$('#fs').click();
 
 /* --- nummer afgelopen: nog 5 seconden, dan is de beurt voorbij --- */
-let graceT=0;
+let graceT=0,grN=-1;
 function renderGrace(){
  const g=$('#grace');if(!g)return;const left=(live.graceAt||0)-Date.now();
- if(left>0&&roundOpen()){g.className='on';g.innerHTML=`<div class="gr-n">${Math.ceil(left/1000)}</div><div class="gr-t">Nummer afgelopen · laatste kans om te antwoorden</div>`}
- else g.className='';
+ if(left>0&&roundOpen()){
+  const n=Math.ceil(left/1000),wait=live.order.map(P).filter(p=>p&&p.inRound&&p.conn&&!p.sub);
+  if(!g.classList.contains('on')||n!==grN){
+   grN=n;g.className='on u'+Math.min(n,5);
+   g.innerHTML=`<div class="gr-ring"></div><div class="gr-ring r2"></div><div class="gr-top">Nummer afgelopen</div><div class="gr-n">${n}</div><div class="gr-t">laatste kans om te antwoorden</div><div class="gr-w"></div>`;
+   heartbeat(n);
+  }
+  const w=g.querySelector('.gr-w');if(w)w.textContent=wait.length?'Nog bezig: '+wait.map(p=>p.name).join(' · '):'Iedereen heeft geantwoord ✓';
+ }else if(g.className){g.className='';grN=-1}
 }
-setInterval(renderGrace,200);
+let hbCtx=null;
+function heartbeat(n){
+ try{
+  if(typeof muted!=='undefined'&&muted)return;
+  const A=window.AudioContext||window.webkitAudioContext;if(!hbCtx)hbCtx=new A();if(hbCtx.state==='suspended')hbCtx.resume();
+  const ac=hbCtx,t=ac.currentTime,v=Math.max(.35,typeof vol==='number'?vol:.8),s=n<=1?1.25:n<=2?1.1:1;
+  const thump=(at,f0,f1,g,len)=>{
+   const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain(),lp=ac.createBiquadFilter();
+   lp.type='lowpass';lp.frequency.value=260;o.type='sine';o2.type='triangle';
+   o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);o2.frequency.setValueAtTime(f0*2,at);o2.frequency.exponentialRampToValueAtTime(f1*2,at+len);
+   gn.gain.setValueAtTime(0.0001,at);gn.gain.exponentialRampToValueAtTime(g*v*s,at+.015);gn.gain.exponentialRampToValueAtTime(.0001,at+len);
+   o.connect(lp);o2.connect(lp);lp.connect(gn);gn.connect(ac.destination);o.start(at);o2.start(at);o.stop(at+len+.02);o2.stop(at+len+.02)};
+  thump(t,70,42,.95,.2);thump(t+.19,62,38,.7,.22);
+ }catch(e){}
+}
+setInterval(renderGrace,100);
 function startGrace(){
  if(live.phase!=='play'||!roundOpen()||(live.graceAt||0)>Date.now())return;
  clearTimeout(graceT);live.graceAt=Date.now()+5000;sendAll({k:'grace',sec:5});renderGrace();
@@ -1771,6 +1874,97 @@ function sendMusic(only){
 function syncMusicTo(id){const p=P(id);if(p&&p.remote&&p.conn)sendMusic(id)}
 ['playing','pause','ended','seeked'].forEach(ev=>audio.addEventListener(ev,()=>sendMusic()));
 setInterval(()=>{if(!audio.paused)sendMusic()},8000);
+
+/* --- rad samenstellen (lobby) --- */
+function drawCatPick(){
+ const el=$('#catPick');if(!el)return;
+ const lock=live.phase!=='lobby';
+ el.className=lock?'lock':'';
+ el.innerHTML=CATS.map(c=>{const on=live.cats.includes(c.type);return `<button data-t="${c.type}" class="cp ${on?'on':''}" style="--c:${c.bg};--f:${c.fg}"><i>${on?'✓':''}</i>${esc(c.label)}</button>`}).join('');
+}
+$('#catPick').onclick=e=>{
+ const b=e.target.closest('button');if(!b||live.phase!=='lobby')return;
+ const t0=b.dataset.t,on=live.cats.includes(t0);
+ if(on&&live.cats.length<=1){say('Minimaal één categorie');return}
+ live.cats=on?live.cats.filter(x=>x!==t0):CATS.map(c=>c.type).filter(x=>x===t0||live.cats.includes(x));
+ WCATS=activeCats();WW=null;saveLive();drawWheel();drawCatPick();
+ live.order.forEach(id=>{const p=P(id);p.card=makeCard();if(p.conn)sendTo(id,stateFor(id))});
+};
+
+/* --- slim rad: categorie verdwijnt als niemand er nog een open vakje van heeft --- */
+function wheelWant(){
+ const all=live.order.map(P).filter(Boolean),conn=all.filter(p=>p.conn),pool=conn.length?conn:all;
+ return activeCats().filter(c=>pool.some(p=>hasOpen(p,c.type)));
+}
+const easeIO=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+async function wheelSync(){
+ if(live.phase!=='play')return;
+ const want=wheelWant(),wt=want.map(c=>c.type),cur=WCATS.map(c=>c.type);
+ if(wt.join()===cur.join())return;
+ const gone=cur.filter(t=>!wt.includes(t)),added=wt.filter(t=>!cur.includes(t));
+ sendAll({k:'wheel',cats:wt,gone,added});
+ spinning=true;state.cur=null;render();
+ const U=CATS.filter(c=>cur.includes(c.type)||wt.includes(c.type));
+ WCATS=U;WW={};U.forEach(c=>WW[c.type]=cur.includes(c.type)?1:0);
+ const wm=$('#wmsg'),nm=ty=>{const c=catOf(ty);return `<span class="wm-c" style="--c:${c.bg};--f:${c.fg}">${c.label}</span>`};
+ const msg=gone.length?(`${gone.map(nm).join(' ')} <b>is klaar!</b><small>Iedereen heeft alle ${gone.map(g=>CLR[g]).join(' en ')} vakjes</small>`):(`${added.map(nm).join(' ')} <b>is terug op het rad</b>`);
+ wm.innerHTML=`<div class="wm-in">${msg}</div>`;wm.className='on';
+ drawWheel();
+ await new Promise(res=>{
+  const t0=performance.now(),FL=700,MV=1400;
+  (function f(){
+   const el=performance.now()-t0;
+   WF=gone[0]||null;WFa=el<FL?(.55*Math.abs(Math.sin(el/FL*Math.PI*3))):0;
+   const k=Math.max(0,Math.min(1,(el-FL)/MV)),e=easeIO(k);
+   U.forEach(c=>{if(gone.includes(c.type))WW[c.type]=1-e;else if(added.includes(c.type))WW[c.type]=e});
+   drawWheel();
+   if(el<FL+MV)requestAnimationFrame(f);else res();
+  })();
+ });
+ WF=null;WCATS=want;WW=null;drawWheel();boom();
+ const h=[...document.querySelectorAll('.wheelwrap')].find(e=>e.offsetParent);
+ if(h){const r=h.getBoundingClientRect();confetti(r.left+r.width/2,r.top+r.height/2,gone.length?60:30,.9)}
+ await new Promise(r=>setTimeout(r,900));
+ wm.className='';spinning=false;
+}
+
+/* --- bingo / volle kaart op de tv (wachtrij) --- */
+const CLR={title:'groene',year:'roze',artist:'gele',decade:'paarse',near:'blauwe'};
+const ORD=['','eerste','tweede','derde','vierde','vijfde','zesde','zevende','achtste','negende','tiende','elfde','twaalfde'];
+let winQ=[],winBusy=false,winT=0,fxT=0;
+function queueWin(it){winQ.push(it);if(!winBusy)nextWin()}
+function fanfare(full){
+ try{
+  if(typeof muted!=='undefined'&&muted)return;
+  const A=window.AudioContext||window.webkitAudioContext,ac=new A(),t=ac.currentTime,v=Math.max(.3,typeof vol==='number'?vol:.8);
+  const N=full?[523,659,784,1047,1319,1568,2093,1568,2093]:[523,659,784,1047];
+  N.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain(),at=t+i*(full?.11:.12);o.type='triangle';o.frequency.value=f;
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.32*v,at+.02);g.gain.exponentialRampToValueAtTime(.0001,at+(i===N.length-1?(full?1.4:.7):.28));o.connect(g);g.connect(ac.destination);o.start(at);o.stop(at+1.5)});
+  setTimeout(()=>ac.close(),2500);
+ }catch(e){}
+}
+function nextWin(){
+ const it=winQ.shift(),w=$('#winner');
+ if(!it){winBusy=false;w.classList.remove('on');w.className='';return}
+ winBusy=true;
+ let html,dur;
+ if(it.kind==='full'){
+  html=`<section class="wn full"><span class="wn-e">🏆</span><h1>VOLLE KAART!</h1><p class="wn-n">${esc(it.name)}</p><p class="wn-s">${it.rank===1?'👑 Als eerste alle 25 vakjes vol! 👑':'Ook alle 25 vakjes vol! · #'+it.rank}</p></section><span class="fl f1">⭐</span><span class="fl f2">🎊</span><span class="fl f3">🎉</span><span class="fl f4">✨</span><span class="fl f5">🥳</span><span class="fl f6">🏅</span>`;dur=11000;
+ }else{
+  const first=it.prev===0;
+  const title=it.gain>1?(first?'DUBBELE BINGO!':`${it.gain}× BINGO!`):'BINGO!';
+  const sub=first?(it.gain>1?'twee rijen tegelijk!':'heeft een rij vol!'):`voor de ${ORD[it.n]||it.n+'e'} keer bingo!`;
+  html=`<section class="wn bingo ${first?'':'again'}"><span class="wn-e">${first?'🎉':'🔥'}</span><h1>${title}</h1><p class="wn-n">${esc(it.name)}</p><p class="wn-s">${sub}</p></section>`;dur=6500;
+ }
+ w.className='on '+it.kind;w.innerHTML=html;
+ fanfare(it.kind==='full');
+ clearInterval(fxT);let k=0;const burst=()=>{
+  confetti(innerWidth*(.15+Math.random()*.7),innerHeight*(.25+Math.random()*.4),it.kind==='full'?110:70,it.kind==='full'?1.5:1.2);
+  if(it.kind==='full'&&k%3===0)confetti(innerWidth*Math.random(),innerHeight*.15,60,1.8);k++};
+ burst();fxT=setInterval(burst,it.kind==='full'?520:800);
+ clearTimeout(winT);winT=setTimeout(()=>{clearInterval(fxT);w.className='';setTimeout(nextWin,350)},dur);
+}
+$('#winner').onclick=()=>{clearTimeout(winT);clearInterval(fxT);$('#winner').className='';setTimeout(nextWin,200)};
 /* ---------- mediaspeler + fade (ease in / ease out) ---------- */
 let vol=LS.get('tv_vol',0.8),muted=false,fadeSec=LS.get('tv_fade',3),duck=1;
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}; // smoothstep

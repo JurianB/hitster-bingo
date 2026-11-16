@@ -26,3 +26,9 @@ Bij het joinen kiezen spelers **📺 Zelfde kamer** of **🌐 Op afstand**. Spel
 
 ## Meerdere kamers
 Elke tv die verbindt krijgt een eigen kamer met eigen roomcode; spelers komen alleen in de kamer van hun code. `TV_KEY` beschermt alleen de tv-pagina. Een tv onthoudt zijn code (ook na herladen of serverherstart). Open `/tv?key=...&room=NEW` voor een nieuwe kamer, of `&room=ABCD` voor een vaste code. Gebruik voor twee tv's wel aparte apparaten of browserprofielen: het spelverloop wordt per browser opgeslagen. Lege kamers worden na 6 uur opgeruimd.
+
+## Rad, bingo's en volle kaart
+- **Rad samenstellen:** in de lobby vink je categorieën aan of uit (standaard alles). De kaarten bevatten alleen de gekozen categorieën en het rad verdeelt de schijf gelijk (4 categorieën = 25% per stuk).
+- **Slim rad:** heeft niemand meer een open vakje van een categorie, dan verdwijnt die met een animatie van het rad (ook op de telefoons). Heeft één speler alle vakjes van de getrokken categorie al, dan doet die speler die ronde niet mee en hoeven de anderen niet op hem te wachten.
+- **Countdown:** na afloop van de preview krijgt iedereen 5 seconden, fullscreen met een hartslag-geluid in de maat van de cijfers (op de tv; spelers op afstand horen het ook).
+- **Meerdere bingo's:** elke extra rij geeft een nieuwe fullscreen melding ("voor de tweede keer bingo"). Een volle kaart krijgt een eigen, extra feestelijke melding.
