@@ -89,7 +89,7 @@ server.on('upgrade',(req,sock)=>{
 /* ---------- spelkamer: server is alleen post (de tv beslist) ---------- */
 let tv=null;                       // WS van het tv-scherm
 const players=new Map();           // id -> {ws,name,connected}
-const roster=()=>[...players].map(([id,p])=>({id,name:p.name,connected:p.connected}));
+const roster=()=>[...players].map(([id,p])=>({id,name:p.name,connected:p.connected,remote:!!p.remote}));
 const toTV=o=>tv&&tv.send(o);
 function attach(ws,role,ip){
  if(role==='tv'){
@@ -119,10 +119,11 @@ function attach(ws,role,ip){
    const old=players.get(id);
    if(!old&&players.size>=MAXP){ws.send({t:'full'});return ws.close()}
    if(old&&old.connected&&old.ws!==ws){old.ws.onclose=null;old.ws.send({t:'kicked',why:'elders'});old.ws.close()}
-   players.set(id,{ws,name,connected:true});
+   players.set(id,{ws,name,connected:true,remote:!!o.remote});
    ws.send({t:'welcome',id,tv:!!tv});
    toTV({t:old?'rejoin':'join',id,name,players:roster()});
   }else if(id){
+   if(o.t==='ping'){ws.send({t:'pong',c:o.c});return}
    if(o.t==='rename'){const p=players.get(id);if(p){p.name=String(o.name||'').slice(0,16)||p.name;toTV({t:'roster',players:roster()})}}
    else toTV({t:'msg',id,data:o});
   }

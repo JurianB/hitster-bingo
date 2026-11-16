@@ -93,6 +93,18 @@ body.wheelon .c{font-size:1rem}
 #toast.on{transform:translateX(-50%) translateY(0)}
 #legend{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;font-size:.72rem;color:#000;font-weight:800;margin-top:.2rem}
 #legend span{border-radius:2rem;padding:.15rem .55rem}
+#where{display:flex;gap:.6rem;width:100%;max-width:22rem}
+#where button{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.7rem .4rem;border-radius:1rem;border:2px solid #ffffff33;background:#ffffff0d;color:inherit;font-size:1.6rem;font-family:inherit}
+#where button span{font-size:.8rem;font-weight:800}
+#where button.on{border-color:#ffd23f;background:#ffd23f22}
+#mute{margin-left:.4rem;background:none;border:0;font-size:1.2rem;color:inherit;display:none}
+body.remote #mute{display:inline-block}
+#songcard{position:fixed;left:.8rem;right:.8rem;bottom:.8rem;z-index:70;display:none;gap:.8rem;align-items:center;padding:.8rem;border-radius:1.1rem;background:#1b1340f2;border:2px solid #ffd23f;box-shadow:0 .6rem 2rem #000a}
+#songcard.on{display:flex;animation:scIn .45s cubic-bezier(.2,1.3,.4,1)}
+@keyframes scIn{from{transform:translateY(120%)}to{transform:none}}
+#songcard img{width:4.2rem;height:4.2rem;border-radius:.6rem;object-fit:cover;background:#ffffff18}
+#songcard b{display:block;font-size:1.05rem}#songcard i{font-style:normal;opacity:.8;font-size:.9rem}
+#songcard em{margin-left:auto;font-style:normal;font-weight:900;font-size:1.6rem;color:#ffd23f}
 </style>
 </head>
 <body>
@@ -103,13 +115,16 @@ body.wheelon .c{font-size:1rem}
  <input id="nm" maxlength="16" placeholder="Je naam" autocomplete="off" autocapitalize="words">
  <input id="rc" maxlength="4" placeholder="ROOMCODE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-align:center;letter-spacing:.35em;font-weight:900;text-transform:uppercase">
  <p style="font-size:.85rem">De roomcode staat op de tv, naast de QR-code.</p>
+ <div id="where"><button type="button" data-r="0" class="on">📺<span>Zelfde kamer</span></button><button type="button" data-r="1">🌐<span>Op afstand</span></button></div>
+ <p id="wherenote" style="font-size:.8rem"></p>
  <button class="pri" id="go">Meedoen</button>
  <p id="joinmsg"></p>
 </div>
 
 <div class="screen" id="game">
- <header><span id="av">🎵</span><b id="name"></b><span id="okc">✓0</span><span id="dot"></span></header>
+ <header><span id="av">🎵</span><b id="name"></b><span id="okc">✓0</span><span id="dot"></span><button id="mute" title="Geluid">🔊</button></header>
  <div id="banner"></div>
+ <div id="songcard"></div>
  <div id="spinbox">
   <div id="pwrap"><div id="ppoint"></div><canvas id="pw" width="720" height="720"></canvas><div id="phub">🎵</div><div id="swipe">👆</div><div id="swipeLbl">SWIPE OM TE DRAAIEN</div></div>
   <div id="spinHint"></div>
@@ -132,6 +147,10 @@ const DECL=d=>({'00s':'2000','10s':'2010','20s':'2020'}[d]||('19'+d.slice(0,2)))
 
 let myId=LS.get('hl_id',null);if(!myId){myId=(crypto.randomUUID?crypto.randomUUID():'p'+Math.random().toString(36).slice(2)+Date.now().toString(36));LS.set('hl_id',myId)}
 let myName=LS.get('hl_name','');
+let remote=LS.get('hl_remote','0')==='1';
+const au=new Audio();au.preload='auto';au.playsInline=true;
+let muted=LS.get('hl_mute','0')==='1',rtt=0,mus=null,musAt=0,unlocked=false;
+
 let myCode=((new URLSearchParams(location.search).get('c'))||LS.get('hl_code','')||'').toUpperCase().slice(0,4);
 let S=null;            // laatste status van de tv
 let ws=null,wsOk=false,tvOn=true,stop=false,retry=0,draft='',lastPop=-1;
@@ -144,7 +163,7 @@ const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch{}};
 function connect(){
  if(stop)return;
  ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws?role=player`);
- ws.onopen=()=>{wsOk=true;retry=0;ws.send(JSON.stringify({t:'hello',id:myId,name:myName,code:myCode}));draw()};
+ ws.onopen=()=>{wsOk=true;retry=0;ws.send(JSON.stringify({t:'hello',id:myId,name:myName,code:myCode,remote}));pingNow();draw()};
  ws.onclose=()=>{wsOk=false;draw();if(!stop)setTimeout(connect,Math.min(5000,500+retry++*700))};
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}on(m)};
 }
@@ -157,6 +176,7 @@ function on(m){
  if(m.t==='tv'){tvOn=m.on;if(m.on)send({k:'sync'});draw();return}
  if(m.t==='badcode'){stop=true;S=null;show('join');$('#rc').value='';$('#joinmsg').textContent=m.locked?'Te veel pogingen. Probeer het over een paar minuten opnieuw.':'Onjuiste roomcode. Kijk op de tv.';return}
  if(m.t==='full'){stop=true;show('join');$('#joinmsg').textContent='Het spel zit vol (max 25 spelers).';return}
+ if(m.t==='pong'){const r=Date.now()-m.c;rtt=rtt?rtt*.6+r*.4:r;return}
  if(m.t==='kicked'){stop=true;S=null;show('join');$('#joinmsg').textContent=m.why==='elders'?'Je bent op een ander apparaat ingelogd.':'Je bent uit het spel verwijderd.';return}
  if(m.t!=='msg')return;
  const d=m.data||{};
@@ -165,14 +185,15 @@ function on(m){
   case 'phase':if(S)S.phase=d.phase;break;
   case 'turn':if(S)S.turn={who:d.who,name:d.name,ready:d.ready};sentSpin=false;break;
   case 'anim':wheelAnim(d);break;
+  case 'music':if(remote)onMusic(d);break;
   case 'grace':graceUntil=d.sec?Date.now()+d.sec*1000:0;lastGs=-1;banner();break;
-  case 'spin':if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';sentSpin=false;buzz(30);wheelKick();break;
+  case 'spin':hideSong();if(S){S.round={s:'spin'};S.turn={...(S.turn||{}),ready:false,spinner:d.by,spinnerName:d.name}}draft='';sentSpin=false;buzz(30);wheelKick();break;
   case 'round':if(S){S.round={s:'open',cat:d.cat,ask:d.ask,color:d.color,pick:null,sub:false,inRound:true};S.n=d.n}draft='';sentSpin=false;buzz([60,40,60]);wheelLand(d.cat);break;
   case 'picked':if(S&&S.round){S.round.pick=d.i}break;
   case 'nopick':toast('Dat vakje kan nu niet');break;
   case 'answered':if(S&&S.round){S.round.sub=true;S.round.ans=d.v}buzz(40);break;
   case 'editing':if(S&&S.round)S.round.sub=false;break;
-  case 'result':graceUntil=0;if(S){if(d.won&&!S.won)bingoConfetti();S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
+  case 'result':graceUntil=0;if(d.song&&remote)showSong(d.song);if(S){if(d.won&&!S.won)bingoConfetti();S.round={...S.round,s:'revealed',res:d.res};const old=S.card;S.card=d.card;S.won=d.won;if(d.res&&d.res.ok){buzz([80,40,80,40,200]);lastPop=S.round.pick}else buzz(200)}break;
  }
  draw();
 }
@@ -371,11 +392,53 @@ function start(){
  myName=($('#nm').value||'').trim().slice(0,16);myCode=($('#rc').value||'').trim().toUpperCase();
  if(!myName){$('#nm').focus();return}
  if(myCode.length!==4){$('#rc').focus();$('#joinmsg').textContent='Vul de roomcode van 4 letters in.';return}
- $('#joinmsg').textContent='';LS.set('hl_name',myName);LS.set('hl_code',myCode);stop=false;show('game');wake();draw();connect();
+ $('#joinmsg').textContent='';LS.set('hl_name',myName);LS.set('hl_code',myCode);LS.set('hl_remote',remote?'1':'0');applyRemote();unlockAudio();stop=false;show('game');wake();draw();connect();
 }
+document.querySelectorAll('#where button').forEach(b=>b.onclick=()=>{remote=b.dataset.r==='1';applyRemote()});
 $('#go').onclick=start;$('#nm').onkeydown=e=>{if(e.key==='Enter')$('#rc').focus()};$('#rc').onkeydown=e=>{if(e.key==='Enter')start()};$('#rc').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'')};
 $('#nm').value=myName;$('#rc').value=myCode;
+applyRemote();
 if(myName&&myCode.length===4){show('game');wake();draw();connect()}else show('join');
+
+/* ---------- op afstand: muziek synchroon ---------- */
+const SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+function applyRemote(){
+ document.body.classList.toggle('remote',remote);
+ document.querySelectorAll('#where button').forEach(b=>b.classList.toggle('on',(b.dataset.r==='1')===remote));
+ $('#wherenote').textContent=remote?'Je hoort de muziek van de tv synchroon op dit toestel. Het rad en de onthulling zie je op je telefoon.':'Je hoort de muziek via de tv in de kamer.';
+ $('#mute').textContent=muted?'🔇':'🔊';au.muted=muted;
+}
+function unlockAudio(){
+ if(!remote||unlocked)return;
+ const old=au.src;au.src=SIL;const pr=au.play();
+ const done=()=>{unlocked=true;if(old&&mus&&mus.url){au.src=mus.url}};
+ if(pr&&pr.then)pr.then(()=>{au.pause();done();if(mus)playMus()}).catch(()=>{});else done();
+}
+addEventListener('pointerdown',()=>{if(remote&&!unlocked)unlockAudio();else if(remote&&mus&&au.paused)playMus()},{passive:true});
+$('#mute').onclick=()=>{muted=!muted;LS.set('hl_mute',muted?'1':'0');applyRemote()};
+function pingNow(){try{ws&&ws.readyState===1&&ws.send(JSON.stringify({t:'ping',c:Date.now()}))}catch{}}
+setInterval(()=>{if(remote)pingNow()},5000);
+function wantPos(){return mus.pos+(performance.now()-musAt)/1000+rtt/2000}
+function playMus(){
+ if(!mus||!mus.url)return;
+ const go=()=>{try{au.currentTime=Math.min(wantPos(),(au.duration||99)-.1)}catch{}au.play().catch(()=>{})};
+ if(au.readyState>=2)go();else au.addEventListener('canplay',go,{once:true});
+}
+function onMusic(d){
+ if(d.stop||!d.url){mus=null;au.pause();return}
+ mus={url:d.url,pos:d.pos};musAt=performance.now();
+ if(au.currentSrc!==d.url&&au.src!==d.url){au.src=d.url;au.load();playMus();return}
+ if(au.paused||au.ended){playMus();return}
+ if(Math.abs(au.currentTime-wantPos())>.35)try{au.currentTime=wantPos()}catch{}
+}
+let songT=0;
+function showSong(s){
+ const el=$('#songcard');
+ el.innerHTML=(s.art?`<img src="${esc(s.art)}" alt="">`:'')+`<div><b>${esc(s.title)}</b><i>${esc(s.artist)}</i></div><em>${esc(s.year)}</em>`;
+ el.classList.add('on');clearTimeout(songT);songT=setTimeout(hideSong,20000);
+}
+function hideSong(){$('#songcard').classList.remove('on')}
+$('#songcard').onclick=hideSong;
 
 /* ---------- confetti bij bingo ---------- */
 const cf=document.createElement('canvas');cf.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90';document.body.appendChild(cf);

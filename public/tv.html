@@ -693,6 +693,7 @@ nav .pill{margin-left:.2rem}
 @keyframes tickPop{from{opacity:0;transform:scale(0) rotate(-40deg)}to{opacity:1;transform:none}}
 @keyframes crossPop{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
 .rv-hint{animation-delay:5.2s}.rv-hint i{animation-delay:5.2s}
+.pl .rem{font-size:.8em;margin-left:.3em;opacity:.85}
 </style>
 </head>
 <body>
@@ -1434,13 +1435,15 @@ function onServer(m){
  if(m.t==='roster'){
   const on=new Set(m.players.filter(x=>x.connected).map(x=>x.id));
   m.players.forEach(x=>{if(!P(x.id)&&x.connected)ensureP(x.id,x.name);else if(P(x.id)){P(x.id).name=x.name}});
+  m.players.forEach(x=>{if(P(x.id))P(x.id).remote=!!x.remote});
   live.order.forEach(id=>{const q=P(id),c=on.has(id);if(q.conn&&!c){q.offAt=Date.now();warnOff(q)}q.conn=c});
   m.players.forEach(x=>{if(on.has(x.id))sendTo(x.id,stateFor(x.id))});
   fixTurn();saveLive();renderPlayers();renderLobby();return;
  }
  if(m.t==='join'||m.t==='rejoin'){
   const p=ensureP(m.id,m.name);
-  sendTo(m.id,stateFor(m.id));
+  {const r=(m.players||[]).find(x=>x.id===m.id);p.remote=!!(r&&r.remote)}
+  sendTo(m.id,stateFor(m.id));setTimeout(()=>syncMusicTo(m.id),400);
   if(live.phase==='play'&&!live.turn){live.turn=m.id}
   broadcastTurn();saveLive();renderPlayers();renderLobby();
   if(m.t==='join')say(`${AV[p.idx%25]} ${p.name} doet mee!`);
@@ -1566,7 +1569,7 @@ function judgeAll(){
   const p=P(id);if(!p)return;
   if(LINES.some(l=>l.every(j=>p.card[j].ok))&&!live.won.includes(id)){live.won.push(id);fresh.push(p.name)}
  });
- resFn=()=>live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.res)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id)})});
+ resFn=()=>live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.res)sendTo(id,{k:'result',res:p.res,card:cardOut(p),won:live.won.includes(id),song:p.remote?songInfo():undefined})});
  clearTimeout(resT);resT=setTimeout(flushRes,RV_LAST+400);
  broadcastTurn();saveLive();renderPlayers();
  if(fresh.length)setTimeout(()=>celebrate(fresh.join(' & ')),RV_LAST+1500);
@@ -1620,7 +1623,7 @@ function drawPlayers(){
   const p=P(id),[cls,txt]=statusOf(id,p);
   const mini=p.card.map((c,i)=>`<i class="m ${TYPES_CLS[c.type]} ${c.ok?'ok':''} ${(roundOpen()&&p.pick===i)?'pk':''}"></i>`).join('');
   return `<div class="pl s-${cls} ${live.turn===id&&live.phase==='play'?'isturn':''}" style="--pc:${PCOL[p.idx%25]}" data-id="${id}">
-   <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b><button class="kick" title="Verwijderen">✕</button></div>
+   <div class="pl-t"><span class="av">${AV[p.idx%25]}</span><b>${esc(p.name)}</b>${p.remote?'<span class="rem" title="Speelt op afstand">🌐</span>':''}<button class="kick" title="Verwijderen">✕</button></div>
    <div class="pl-b"><div class="pl-s">${txt}</div><div class="mini">${mini}</div></div>
   </div>`}).join('');
 }
@@ -1751,6 +1754,22 @@ function startGrace(){
 function cancelGrace(){clearTimeout(graceT);if(live.graceAt){live.graceAt=0;sendAll({k:'grace',sec:0})}renderGrace()}
 audio.addEventListener('ended',startGrace);
 audio.addEventListener('play',cancelGrace);
+
+/* --- muziek synchroon naar spelers op afstand --- */
+function songInfo(){const s=curSong();if(!s)return null;return{title:s.title,artist:s.artist,year:s.year,art:curInfo&&curInfo.art||null}}
+function musicMsg(){
+ const url=audio.currentSrc||audio.src;
+ if(!url||audio.paused||audio.ended||!state.cur||!curInfo||!curInfo.found)return{k:'music',stop:true};
+ return{k:'music',url,pos:audio.currentTime,dur:audio.duration||30};
+}
+function sendMusic(only){
+ if(live.phase!=='play')return;
+ const m=musicMsg();
+ live.order.forEach(id=>{const p=P(id);if(p&&p.conn&&p.remote&&(!only||only===id))sendTo(id,m)});
+}
+function syncMusicTo(id){const p=P(id);if(p&&p.remote&&p.conn)sendMusic(id)}
+['playing','pause','ended','seeked'].forEach(ev=>audio.addEventListener(ev,()=>sendMusic()));
+setInterval(()=>{if(!audio.paused)sendMusic()},8000);
 /* ---------- mediaspeler + fade (ease in / ease out) ---------- */
 let vol=LS.get('tv_vol',0.8),muted=false,fadeSec=LS.get('tv_fade',3),duck=1;
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}; // smoothstep
